@@ -110,3 +110,15 @@ Factual record of what the coding agent (Claude Code) proposed and what Sonia ke
 ### Agent mistakes caught while building
 - **Contrast:** the first `ink-subtle` was 4.42:1 on paper, below AA 4.5:1, and the input border was 1.6:1 against white, below the 3:1 needed for form controls. Both were caught by computing contrast before use and fixed; `line-input` was added.
 - **Phone overflow:** buttons never wrapped, so a long label pushed the 375px page to 377px. The visual check caught it through the screenshot width, and buttons now wrap.
+
+## 2026-10-24 · Slice 5: queue, and the designer review
+
+### Agent mistakes caught by the visual check
+- **Two more phone overflow bugs in the agent's ChoiceGroup:** a `<fieldset>` defaults to `min-width: min-content`, and the visually hidden radio inputs (`position: absolute`) escaped the scrolling row because their labels weren't `relative`. The agent's first fix (`min-w-0`) didn't solve it; measuring `scrollWidth` and the offending elements did. After the third overflow bug, the visual check was changed to fail automatically when a screen scrolls sideways and to name the elements that stick out.
+- **Copy:** "AI overall: ai is unsure (61%)" was lower-cased badly. Changed to "Overall AI confidence 61% · AI is unsure".
+
+### Adversarial designer review: Sonia's idea
+- **Sonia:** asked for an adversarial review by a designer agent.
+- **What happened:** a subagent reviewed tokens, `ui/` and the screenshots, and wrote `docs/design/reviews/01-design-system-review.md` (15 findings). Before presenting them, the main agent checked the key claims against the code (highlight 1.0:1, the progress bar rounding 47/49 up to full, success vs human nearly identical in luminance). All three held.
+- **Proposed triage:** A, fix 9 foundation issues in `ui/` now; B, build the missing primitives with the review screen; C, list the rest in the README.
+- **Outcome:** Sonia accepted the triage as proposed.

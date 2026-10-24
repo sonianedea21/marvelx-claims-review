@@ -9,12 +9,14 @@ description: Screenshot the key screens at phone (375px) and laptop (1280px) wid
 
 `npm run visual-check` (implemented in `scripts/visual-check.ts` with Playwright) starts from a running dev server and saves screenshots to `.screenshots/`, which is gitignored. It captures these screens at 375×812 and 1280×800:
 
-- `/` (queue)
-- `/claims/clm_4817` (review screen, mid-run and after the run finishes)
-- `/claims/clm_4822` (failed run)
-- `/dev/components`
+- `/`: the queue mid-replay, when all runs are done, empty (no reviewed claims yet) and in its error state (`?status=done` → 400)
+- `/claims/clm_4817`: the review screen frozen mid-run (96 s) and after the run finishes
+- `/claims/clm_4822`: the failed run
+- `/dev/components`, and with the bottom sheet open
 
-For the review screens, the script uses a deterministic replay position (a query param or the replay-speed setting) so screenshots are comparable between runs.
+Before each screenshot the script freezes the replay at a fixed position (`POST /api/dev/replay` with speed 0 and `seek_ms`), so screenshots are comparable between runs. At the end it restarts the replay at 1×, which clears any decisions you made. Targets live in `GROUPS` in `scripts/visual-check.ts`; add new screens there.
+
+The script also fails (exit code 1) if any screen scrolls sideways, and names the elements that stick out. Usual causes so far: text that can't wrap (`whitespace-nowrap`), a `<fieldset>` or flex child without `min-w-0`, and an absolutely positioned `sr-only` input whose parent isn't `relative`.
 
 ## How to review
 

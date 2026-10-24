@@ -12,14 +12,15 @@ type ChoiceGroupProps<T extends string> = {
 /** A small set of radio buttons drawn as pills (yes / no, filters). Native radios underneath. */
 export function ChoiceGroup<T extends string>({ name, legend, options, value, onChange, className }: ChoiceGroupProps<T>) {
   return (
-    <fieldset className={cx('space-y-1.5', className)}>
+    <fieldset className={cx('min-w-0 space-y-1.5', className)}>
       <legend className="mb-1.5 text-sm font-medium text-ink">{legend}</legend>
-      <div className="flex flex-wrap gap-2">
+      {/* One scrolling row on phones, wrapping from sm up. The padding keeps focus rings unclipped. */}
+      <div className="-m-1 flex gap-2 overflow-x-auto p-1 sm:flex-wrap sm:overflow-visible">
         {options.map((option) => (
           <label
             key={option.value}
             className={cx(
-              'inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm font-medium',
+              'relative inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-full border px-4 text-sm font-medium',
               'has-focus-visible:focus-ring',
               value === option.value
                 ? 'border-ink bg-ink text-ink-inverse'

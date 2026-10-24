@@ -1,20 +1,82 @@
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { api, type QueueFilter } from '../../api/claims';
+import { useLiveData } from '../../api/useLiveData';
+import type { ClaimStatus, Priority } from '../../domain/types';
+import { Banner, Button, EmptyState, Eyebrow, Heading, Skeleton } from '../../ui';
+import { QueueFilters } from './QueueFilters';
+import { QueueRow } from './QueueRow';
 
-// Placeholder until slice 5. Proves the client can reach the server through the Vite proxy.
 export function QueuePage() {
-  const [health, setHealth] = useState('checking…');
+  const [params, setParams] = useSearchParams();
+  // Passed to the server as is: an unknown value comes back as a 400 we show to the reviewer.
+  const filter = {
+    status: params.get('status') ?? undefined,
+    priority: params.get('priority') ?? undefined,
+  } as QueueFilter;
+  const { data: claims, error, connection, retry } = useLiveData(
+    () => api.queue(filter),
+    api.queueEventsUrl(filter),
+    'queue',
+  );
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => res.json())
-      .then((body: { ok: boolean }) => setHealth(body.ok ? 'server ok' : 'server error'))
-      .catch(() => setHealth('server unreachable'));
-  }, []);
+  function setFilter(next: { status: ClaimStatus | 'all'; priority: Priority | 'all' }) {
+    const search = new URLSearchParams();
+    if (next.status !== 'all') search.set('status', next.status);
+    if (next.priority !== 'all') search.set('priority', next.priority);
+    setParams(search);
+  }
 
   return (
-    <main className="p-8">
-      <h1 className="font-serif text-xl">Claims queue</h1>
-      <p className="mt-2">{health}</p>
+    <main className="mx-auto max-w-content space-y-6 px-4 py-6 sm:py-10">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-1">
+          <Eyebrow>Claims review</Eyebrow>
+          <Heading level={1}>Your queue</Heading>
+        </div>
+        {connection === 'reconnecting' && <p className="text-sm text-ink-subtle">Reconnecting… showing the last update.</p>}
+      </header>
+
+      <QueueFilters status={filter.status ?? 'all'} priority={filter.priority ?? 'all'} onChange={setFilter} />
+
+      {error ? (
+        <Banner
+          tone="danger"
+          title="Couldn't load the queue"
+          actions={
+            error.status === 400 ? (
+              <Button variant="primary" onClick={() => setParams(new URLSearchParams())}>
+                Clear filters
+              </Button>
+            ) : (
+              <Button variant="primary" icon="refresh" onClick={retry}>
+                Try again
+              </Button>
+            )
+          }
+        >
+          <p>{error.message}</p>
+        </Banner>
+      ) : claims === null ? (
+        <div className="space-y-3" aria-busy="true">
+          <span className="sr-only">Loading claims…</span>
+          {[1, 2, 3].map((n) => (
+            <Skeleton key={n} shape="block" />
+          ))}
+        </div>
+      ) : claims.length === 0 ? (
+        <EmptyState
+          title="No claims match these filters"
+          action={<Button onClick={() => setParams(new URLSearchParams())}>Show all claims</Button>}
+        >
+          Try another status or priority.
+        </EmptyState>
+      ) : (
+        <ul className="space-y-3" aria-label={`${claims.length} claims`}>
+          {claims.map((claim) => (
+            <QueueRow key={claim.id} claim={claim} />
+          ))}
+        </ul>
+      )}
     </main>
   );
 }
