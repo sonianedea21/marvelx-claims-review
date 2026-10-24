@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. This is the only file allowed to contain raw colour or size values.
+ * Provisional neutral set for scaffolding and design exploration; the real
+ * palette, type scale and semantic colours land in slice 4.
+ */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
