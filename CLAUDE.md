@@ -96,7 +96,7 @@ The server owns a replay clock. Reviewers must be able to restart it and change 
 - Live updates must not yank content out from under someone who is mid-edit. Use `aria-live="polite"` sparingly. Respect `prefers-reduced-motion`.
 - Accessibility basics: keyboard-operable actions, visible focus, colour is never the only signal, AA contrast, labelled inputs, hit targets of at least 44px on touch.
 - Write copy in plain words. Say "AI-extracted", not "model output". Express confidence in terms a reviewer can act on.
-- Save design-exploration screenshots and the chosen direction in `docs/design/`. They feed the README and the interview.
+- **Chosen direction: see `docs/design/README.md`** (triage backbone, summary open at the top, evidence on demand). Follow it for the review screen.
 
 ## Agent setup (part of the deliverable)
 
@@ -130,6 +130,6 @@ Node 22 (see `.nvmrc`; run `nvm use` first, the machine default is older).
 
 - `npm run dev`: API on :3001 and Vite on :5173 (proxies `/api`), together.
 - `npm run typecheck` / `npm test` / `npm run lint`: all three must pass before a checkpoint.
-- `npm run visual-check`: screenshots the default screens at 375 and 1280 into `.screenshots/` (needs `npm run dev`). Add `explorations --out docs/design/explorations` for the design explorations.
+- `npm run visual-check`: screenshots the default screens at 375 and 1280 into `.screenshots/` (needs `npm run dev`).
 - Server code: `server/app.ts` builds the Express app (tests use it via supertest); `server/index.ts` only listens.
 - Component tests opt into jsdom with `// @vitest-environment jsdom` at the top of the file.

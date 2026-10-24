@@ -66,3 +66,20 @@ Factual record of what the coding agent (Claude Code) proposed and what Sonia ke
 ### Design explorations in code: accepted
 - **Proposed:** throwaway React pages in `src/explorations/` rather than a Claude Design canvas.
 - **Outcome:** accepted.
+
+## 2026-10-24 · Design direction
+
+### Hybrid direction: accepted with a change
+- **Proposed:** after three explorations (evidence split, triage list, live narrative), a hybrid: triage list as the backbone, the source document on demand from exploration 1, and the "AI changed this" moment from exploration 3. Summary and steps collapsed, and one-tap Accept dropped from the "looks fine" rows to discourage rubber-stamping.
+- **Sonia changed:** the AI summary stays open at the top. She stated the principle that the analysis must clearly communicate confidence and let the reviewer act fast while being confident of their actions, because "the AI is there to make the job easier".
+- **Outcome:** recorded in `docs/design/README.md`. How fast accepting works on the "looks fine" rows is reopened as a decision.
+
+### Bug in the agent's exploration code: fixed
+- **What happened:** the agent's exploration 1 rendered blank on desktop. Its effect returned `scrollIntoView()`, which newer Chromium returns as a Promise, and React called that as a cleanup function. The agent found it via the visual check and the browser console, and fixed it.
+
+### Fast accept on "looks fine" rows: accepted
+- **Proposed:** a one-tap Accept per row, with the cited text shown in the row. The alternatives offered were an "Accept all that look fine" button per claim (flagged as overlapping the bulk ticket) and no one-tap accept at all.
+- **Outcome:** accepted. This reverses the agent's earlier suggestion to drop one-tap Accept, in line with Sonia's "fast actions you're confident of".
+
+### Keyboard shortcuts: deferred, as proposed
+- **Outcome:** not built now; they go in the README "What next" section.

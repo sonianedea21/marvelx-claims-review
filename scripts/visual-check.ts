@@ -2,8 +2,6 @@
  * Screenshots key screens at phone and laptop width. Needs `npm run dev` running.
  *
  *   npm run visual-check                      # default screens → .screenshots/
- *   npm run visual-check -- explorations      # design explorations → .screenshots/
- *   npm run visual-check -- explorations --out docs/design/explorations
  */
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -24,11 +22,6 @@ const GROUPS: Record<string, Target[]> = {
     { name: 'review-4817', path: '/claims/clm_4817' },
     { name: 'review-4822-failed', path: '/claims/clm_4822' },
     { name: 'dev-components', path: '/dev/components' },
-  ],
-  explorations: [
-    { name: 'exploration-1-evidence-split', path: '/explorations/1' },
-    { name: 'exploration-2-triage-list', path: '/explorations/2' },
-    { name: 'exploration-3-live-narrative', path: '/explorations/3' },
   ],
 };
 
