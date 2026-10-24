@@ -75,14 +75,16 @@ fixtures-extra/ our own runs
 scripts/       replay + visual-check scripts
 ```
 
-### Endpoints (proposal; confirm in planning)
+### Endpoints (implemented in `server/routes/`)
 
-- `GET /api/claims?status=&priority=`: validated. An unknown value returns `400` with the allowed values.
-- `GET /api/claims/:id`: unknown id returns `404`.
-- `GET /api/claims/:id/events`: SSE stream of replayed events.
-- `GET /api/claims/:id/documents/:docId`
-- `POST /api/claims/:id/decisions`: validated against the field's `value_type` and its current agent version. Returns `409` or `422` with a reason.
-- A live queue update (SSE or polling): choose in planning.
+- `GET /api/claims?status=&priority=`: the queue, needs_review first. An unknown value returns `400` with the allowed values.
+- `GET /api/claims/:id`: the full claim snapshot (`ClaimDetail`). Unknown id returns `404`.
+- `GET /api/claims/:id/events`: SSE. A `claim` event with the full snapshot on connect and after every change to that claim. The server is the only place events are applied; the browser just renders snapshots.
+- `GET /api/queue/events?status=&priority=`: SSE. A `queue` event with the full filtered list after any change.
+- `GET /api/claims/:id/documents/:docId`: `404` for a document not on this claim.
+- `POST /api/claims/:id/decisions` `{field_id, action, value?, agent_version}`: through `domain/validateDecision`. `400` malformed, `404` unknown field, `409` agent changed the value since it was shown, `422` invalid value.
+- `POST /api/claims/:id/acknowledge-warning`, `POST /api/claims/:id/complete` (`409` with `blocked_by`).
+- `GET|POST /api/dev/replay` `{speed?, seek_ms?}`: dev only.
 
 ### Replay
 
@@ -131,5 +133,8 @@ Node 22 (see `.nvmrc`; run `nvm use` first, the machine default is older).
 - `npm run dev`: API on :3001 and Vite on :5173 (proxies `/api`), together.
 - `npm run typecheck` / `npm test` / `npm run lint`: all three must pass before a checkpoint.
 - `npm run visual-check`: screenshots the default screens at 375 and 1280 into `.screenshots/` (needs `npm run dev`).
+- `npm run replay [-- --speed 4] [--seek 60000]`: restarts the replay on the running server (clears decisions). `--speed 0 --seek 96000` freezes 004817 mid-run.
+- `REPLAY_SPEED=4 npm run dev`: replay speed at boot (default 1). `EXTRA_RUNS=1 npm run dev`: also load `fixtures-extra/`.
 - Server code: `server/app.ts` builds the Express app (tests use it via supertest); `server/index.ts` only listens.
+- Domain tests build state from real fixtures via `server/testFixtures.ts` (it reads files, so it lives outside `domain/`).
 - Component tests opt into jsdom with `// @vitest-environment jsdom` at the top of the file.

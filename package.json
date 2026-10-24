@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "visual-check": "tsx scripts/visual-check.ts"
+    "visual-check": "tsx scripts/visual-check.ts",
+    "replay": "tsx scripts/replay.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.3.1",

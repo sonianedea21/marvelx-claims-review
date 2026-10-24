@@ -1,0 +1,24 @@
+[
+  {
+    "id": "clm_9001",
+    "claim_id": "CLM-2026-009001",
+    "claimant_name": "Test: short run",
+    "product": "bicycle",
+    "priority": "low",
+    "received_at": "2026-09-23T08:00:00+02:00",
+    "run": "runs/CLM-2026-009001.jsonl",
+    "start_after_ms": 2000,
+    "initial_status": "queued"
+  },
+  {
+    "id": "clm_9002",
+    "claim_id": "CLM-2026-009002",
+    "claimant_name": "Test: non-retryable failure",
+    "product": "bicycle",
+    "priority": "normal",
+    "received_at": "2026-09-23T08:05:00+02:00",
+    "run": "runs/CLM-2026-009002.jsonl",
+    "start_after_ms": 3000,
+    "initial_status": "queued"
+  }
+]

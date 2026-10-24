@@ -83,3 +83,14 @@ Factual record of what the coding agent (Claude Code) proposed and what Sonia ke
 
 ### Keyboard shortcuts: deferred, as proposed
 - **Outcome:** not built now; they go in the README "What next" section.
+
+## 2026-10-24 · Slice 3: domain, replay, API
+
+### Agent mistakes caught by the tests
+- **Field count:** the agent's Step 1 walkthrough said 004830 has 8 fields; it has 9. An API test written from that number failed, and the test was corrected.
+- **Injection quotes:** the first version split documents by sentence, which cut the injected note into two quotes, and it failed to split summary sentences ending in bold markdown (`.**`). The agent's own test expectation was wrong too. Fixed: documents are quoted by whole line, the summary by sentence.
+
+### Implementation details the agent chose (small, not product decisions)
+- **Queue SSE:** sends the full filtered list on every change, not one item. The plan said one item; with this few claims, the browser simply replaces the list.
+- **Extra runs:** `fixtures-extra/` loads only with `EXTRA_RUNS=1`, so the reviewers' queue shows the supplied claims only.
+- **Injection flag:** set from the documents as soon as the claim is loaded, before the agent reaches the statement. The reviewer is warned from the start, independently of the agent.

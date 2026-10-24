@@ -1,0 +1,5 @@
+{"seq":1,"at_ms":0,"type":"run_started","claim_id":"CLM-2026-009002","payload":{"started_at":"2026-09-23T08:05:10+02:00"}}
+{"seq":2,"at_ms":200,"type":"step_started","claim_id":"CLM-2026-009002","payload":{"step_id":"read_locksmith","label":"Read locksmith note"}}
+{"seq":3,"at_ms":700,"type":"field_extracted","claim_id":"CLM-2026-009002","payload":{"field_id":"lock_cut","label":"Lock was cut","value":true,"value_type":"boolean","confidence":0.92,"source":{"document_id":"locksmith-note-009002","start":15,"end":38}}}
+{"seq":4,"at_ms":900,"type":"summary_delta","claim_id":"CLM-2026-009002","payload":{"text":"The chain lock was cut and "}}
+{"seq":5,"at_ms":3000,"type":"run_failed","claim_id":"CLM-2026-009002","payload":{"step_id":"read_locksmith","error":{"code":"document_unreadable","message":"Page 2 of the locksmith note could not be read.","retryable":false}}}

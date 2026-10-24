@@ -1,0 +1,14 @@
+[
+  {
+    "document_id": "photo-note-009001",
+    "claim_id": "CLM-2026-009001",
+    "title": "Photo note with emoji",
+    "kind": "statement"
+  },
+  {
+    "document_id": "locksmith-note-009002",
+    "claim_id": "CLM-2026-009002",
+    "title": "Locksmith note",
+    "kind": "repair_report"
+  }
+]

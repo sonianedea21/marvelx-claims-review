@@ -1,0 +1,11 @@
+{"seq":1,"at_ms":0,"type":"run_started","claim_id":"CLM-2026-009001","payload":{"started_at":"2026-09-23T08:00:10+02:00"}}
+{"seq":2,"at_ms":200,"type":"step_started","claim_id":"CLM-2026-009001","payload":{"step_id":"read_note","label":"Read photo note"}}
+{"seq":3,"at_ms":600,"type":"field_extracted","claim_id":"CLM-2026-009001","payload":{"field_id":"frame_number","label":"Frame number","value":"XY-12345","value_type":"text","confidence":0.95,"source":{"document_id":"photo-note-009001","start":79,"end":87}}}
+{"seq":4,"at_ms":900,"type":"confidence_changed","claim_id":"CLM-2026-009001","payload":{"field_id":"bike_value","confidence":0.8,"reason":"Delivered before the field it refers to."}}
+{"seq":5,"at_ms":1200,"type":"field_extracted","claim_id":"CLM-2026-009001","payload":{"field_id":"bike_value","label":"Bicycle value","value":{"amount":"989.00","currency":"EUR"},"value_type":"money","confidence":0.6,"source":{"document_id":"photo-note-009001","start":95,"end":103}}}
+{"seq":6,"at_ms":1500,"type":"summary_delta","claim_id":"CLM-2026-009001","payload":{"text":"Short test run. **Bold split "}}
+{"seq":7,"at_ms":1700,"type":"summary_delta","claim_id":"CLM-2026-009001","payload":{"text":"across deltas.**"}}
+{"seq":8,"at_ms":2000,"type":"field_revised","claim_id":"CLM-2026-009001","payload":{"field_id":"bike_value","value":{"amount":"899.00","currency":"EUR"},"confidence":0.9,"source":{"document_id":"photo-note-009001","start":95,"end":103},"reason":"Misread 899 as 989."}}
+{"seq":6,"at_ms":2100,"type":"summary_delta","claim_id":"CLM-2026-009001","payload":{"text":"Short test run. **Bold split "}}
+{"seq":9,"at_ms":2400,"type":"step_finished","claim_id":"CLM-2026-009001","payload":{"step_id":"read_note","outcome":"ok"}}
+{"seq":10,"at_ms":2600,"type":"run_finished","claim_id":"CLM-2026-009001","payload":{"overall_confidence":0.9}}
