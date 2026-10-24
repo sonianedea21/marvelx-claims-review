@@ -5,7 +5,7 @@ import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import {
-  BackToTop, Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, useStickyOffset,
+  BackToTop, Banner, Button, Card, cx, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, useStickyOffset,
   type JumpItem, type StepItem,
 } from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
@@ -64,6 +64,7 @@ export function ReviewPage() {
   }
 
   const locked = detail.claim.status === 'reviewed';
+  const canComplete = !locked && detail.review.blockers.length === 0;
   const lookFields = detail.fields.filter(needsALook);
   const fineFields = detail.fields.filter((f) => !needsALook(f));
   const openCount = lookFields.filter(isOpen).length;
@@ -177,7 +178,7 @@ export function ReviewPage() {
   }
 
   return (
-    <main className="mx-auto max-w-content space-y-5 px-4 pt-2 pb-10">
+    <main className={cx('mx-auto max-w-content space-y-5 px-4 pt-2 pb-10', canComplete && 'pb-28 lg:pb-10')}>
       <ClaimHeader detail={detail} />
       {detail.run.phase === 'running' && (
         <div className="rounded-md border border-line bg-ai-tint px-4 py-2">
@@ -252,7 +253,15 @@ export function ReviewPage() {
         )}
       </div>
 
-      <BackToTop />
+      {/* Phones: once the review can be completed, the button waits at the bottom of the screen. */}
+      {canComplete && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface p-4 shadow-lg lg:hidden">
+          <Button variant="primary" className="w-full" loading={busy === 'complete'} onClick={() => run('complete', () => api.complete(id))}>
+            Complete review
+          </Button>
+        </div>
+      )}
+      <BackToTop className={canComplete ? 'bottom-24 lg:bottom-6' : undefined} />
       {!isDesktop && (
         <SourcePanel
           claimId={id}

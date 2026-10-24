@@ -216,3 +216,4 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 - **Stacking:** a confirmation opened from the phone document sheet didn't dim the sheet. Sonia asked whether that's how these components work. Answer: no, a confirmation should be a second modal layer. The agent's z-index values put both scrims at z-40 and both panels at z-50, so the confirmation's scrim sat below the sheet. Layers are now ordered (sheet 40/50, confirmation 60/70) and written down in `src/tokens/README.md`.
 - **"AI still working" label** in the sticky row removed, at Sonia's request (the run bar above already says it).
 - **README time:** set to about 4.5 hours, the extra half hour attributed to the adversarial reviews, as Sonia stated.
+- **Phone "Complete review":** at Sonia's request, once a review can be completed on a phone, the button appears in a bar fixed to the bottom of the screen. The back-to-top button moves up above it.
