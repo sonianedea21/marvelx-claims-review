@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import type { ClaimDetail } from '../../domain/types';
-import { Badge, Eyebrow, Heading, Icon, LiveIndicator } from '../../ui';
+import { Badge, cx, Eyebrow, Heading, Icon, LiveIndicator } from '../../ui';
 import { confidenceCopy } from '../shared/confidenceCopy';
 import { PRIORITY_LABEL, STATUS_DISPLAY } from '../queue/statusDisplay';
 
@@ -12,15 +12,16 @@ export function ClaimHeader({ detail }: { detail: ClaimDetail }) {
   return (
     <>
       <div className="space-y-1">
-        <Link to="/" className="inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted hover:text-ink focus-visible:focus-ring">
-          <Icon name="arrow_left" size="sm" /> Queue
-        </Link>
+        <BackLink className="hidden lg:inline-flex" />
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="space-y-1">
-            <Eyebrow>
-              {claim.claim_id} · {claim.product}
-            </Eyebrow>
-            <Heading level={1}>{claim.claimant_name}</Heading>
+          <div className="flex w-full items-start justify-between gap-3 lg:w-auto">
+            <div className="min-w-0 space-y-1">
+              <Eyebrow>
+                {claim.claim_id} · {claim.product}
+              </Eyebrow>
+              <Heading level={1}>{claim.claimant_name}</Heading>
+            </div>
+            <BackLink className="inline-flex shrink-0 lg:hidden" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {claim.priority === 'high' ? (
@@ -55,5 +56,16 @@ export function RunBar({ detail }: { detail: ClaimDetail }) {
     <LiveIndicator className="font-medium text-ai-strong">
       {run.current_step ? `The AI is still working · ${run.current_step.label}.` : 'The AI is starting.'} Fields can still change.
     </LiveIndicator>
+  );
+}
+
+function BackLink({ className }: { className?: string }) {
+  return (
+    <Link
+      to="/"
+      className={cx('min-h-11 items-center gap-1 text-sm text-ink-muted hover:text-ink focus-visible:focus-ring', className)}
+    >
+      <Icon name="arrow_left" size="sm" /> Queue
+    </Link>
   );
 }

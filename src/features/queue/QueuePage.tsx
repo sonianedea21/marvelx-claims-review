@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { api, type QueueFilter } from '../../api/claims';
 import { useLiveData } from '../../api/useLiveData';
 import type { ClaimStatus, Priority } from '../../domain/types';
-import { Banner, Button, EmptyState, Eyebrow, Heading, Skeleton } from '../../ui';
+import { Banner, Button, EmptyState, Eyebrow, Heading, Sheet, Skeleton } from '../../ui';
 import { QueueFilters } from './QueueFilters';
 import { QueueRow } from './QueueRow';
 
@@ -19,6 +20,9 @@ export function QueuePage() {
     'queue',
   );
 
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilters = [filter.status, filter.priority].filter(Boolean).length;
+
   function setFilter(next: { status: ClaimStatus | 'all'; priority: Priority | 'all' }) {
     const search = new URLSearchParams();
     if (next.status !== 'all') search.set('status', next.status);
@@ -34,9 +38,27 @@ export function QueuePage() {
           <Heading level={1}>Your queue</Heading>
         </div>
         {connection === 'reconnecting' && <p className="text-sm text-ink-subtle">Reconnecting… showing the last update.</p>}
+        {/* Phones: filters live in a bottom drawer. */}
+        <Button className="sm:hidden" icon="filter" onClick={() => setFiltersOpen(true)}>
+          Filters{activeFilters > 0 ? ` · ${activeFilters}` : ''}
+        </Button>
       </header>
 
-      <QueueFilters status={filter.status ?? 'all'} priority={filter.priority ?? 'all'} onChange={setFilter} />
+      <div className="hidden sm:block">
+        <QueueFilters status={filter.status ?? 'all'} priority={filter.priority ?? 'all'} onChange={setFilter} />
+      </div>
+      <Sheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title="Filter the queue"
+        footer={
+          <Button variant="primary" className="w-full" onClick={() => setFiltersOpen(false)}>
+            Show {claims?.length ?? 0} {claims?.length === 1 ? 'claim' : 'claims'}
+          </Button>
+        }
+      >
+        <QueueFilters status={filter.status ?? 'all'} priority={filter.priority ?? 'all'} onChange={setFilter} layout="wrap" />
+      </Sheet>
 
       {error ? (
         <Banner

@@ -1,5 +1,5 @@
 import type { ClaimDetail } from '../../domain/types';
-import { Banner, Button, Disclosure, Excerpt } from '../../ui';
+import { Banner, Button, Disclosure, Excerpt, Icon } from '../../ui';
 import { failureGuidance } from './failureCopy';
 
 type Props = {
@@ -20,39 +20,40 @@ export function RunBanners({ detail, acknowledging, onAcknowledge, retrying, onR
 
   return (
     <>
-      {detail.suspicious_instructions.length > 0 &&
-        (acknowledged ? (
-          <Disclosure summary={<span className="text-danger">You've read the suspicious-instruction warning · show it again</span>}>
-            <div className="space-y-2">
-              {fromDocuments.map((s, i) => (
-                <Excerpt key={i} tone="suspicious" highlight={s.excerpt} />
-              ))}
-              <p className="text-sm text-ink">Nothing on this claim is pre-approved. Claimants can't approve their own claims.</p>
-            </div>
-          </Disclosure>
-        ) : (
-          <Banner
-            tone="danger"
-            icon="shield"
-            title="A document on this claim tries to instruct the claims system"
-            actions={
-              <Button variant="primary" loading={acknowledging} onClick={onAcknowledge}>
-                I've read this, continue reviewing
-              </Button>
-            }
-          >
+      {detail.suspicious_instructions.length > 0 && (
+        // One collapsible in both states: open until the reviewer has read it, folded (but re-openable) after.
+        <Disclosure
+          key={acknowledged ? 'read' : 'unread'}
+          tone="danger"
+          defaultOpen={!acknowledged}
+          summary={
+            <span className="flex items-center gap-2 text-danger">
+              <Icon name="shield" size="sm" />
+              {acknowledged
+                ? "You've read the warning: a document tries to instruct the claims system"
+                : 'A document on this claim tries to instruct the claims system'}
+            </span>
+          }
+        >
+          <div className="space-y-3">
             {fromDocuments.map((s, i) => (
               <div key={i} className="space-y-1">
                 <p className="text-xs text-ink-muted">In “{s.document_id ? titles[s.document_id] : 'a document'}”:</p>
                 <Excerpt tone="suspicious" highlight={s.excerpt} />
               </div>
             ))}
-            <p className="text-ink">
+            <p className="text-sm text-ink">
               {inSummary ? 'The AI summary repeats this as if it were a fact. ' : ''}
               Nothing has been pre-approved. Review every field as normal: claimants can't approve their own claims.
             </p>
-          </Banner>
-        ))}
+            {!acknowledged && (
+              <Button variant="primary" loading={acknowledging} onClick={onAcknowledge}>
+                I've read this, continue reviewing
+              </Button>
+            )}
+          </div>
+        </Disclosure>
+      )}
 
       {error && (
         <Banner

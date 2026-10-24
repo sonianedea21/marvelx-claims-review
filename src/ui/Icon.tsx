@@ -22,6 +22,7 @@ const PATHS = {
   arrow_left: 'M19 12H5m7 7-7-7 7-7',
   pencil: 'M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z',
   swap: 'M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4',
+  filter: 'M3 5h18M6 12h12M10 19h4',
   refresh: 'M21 12a9 9 0 0 1-15 6.7L3 16M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M3 21v-5h5',
 } as const;
 

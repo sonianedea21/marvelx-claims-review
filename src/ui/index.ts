@@ -23,5 +23,6 @@ export { SidePanel } from './SidePanel';
 export { Skeleton } from './Skeleton';
 export { StepList, type StepItem } from './StepList';
 export { Tooltip } from './Tooltip';
+export { useStickyOffset } from './useStickyOffset';
 export { Eyebrow, Heading } from './Text';
 export { ValueChange } from './ValueChange';

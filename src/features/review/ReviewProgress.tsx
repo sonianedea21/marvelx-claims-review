@@ -32,8 +32,8 @@ export function ReviewProgress({ detail, attentionCount, busy, onComplete, onReo
   }
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-1.5">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="min-w-0 flex-1 space-y-1.5">
         <p className="flex flex-wrap justify-between gap-x-4 text-sm">
           <span className="font-medium">
             {decided} of {total} fields decided
@@ -41,20 +41,12 @@ export function ReviewProgress({ detail, attentionCount, busy, onComplete, onReo
           {attentionCount > 0 && <span className="font-medium text-attention">{attentionCount} need a look</span>}
         </p>
         <ProgressBar value={decided} max={total} label={`${decided} of ${total} fields decided`} />
+        {blockers.length > 0 && <p className="text-xs text-ink-muted">Before you can complete: {blockers.join(' · ').toLowerCase()}.</p>}
+        {error && <p className="text-sm font-medium text-danger" role="alert">{error}</p>}
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Button variant="primary" disabled={detail.review.blockers.length > 0} loading={busy} onClick={onComplete}>
-          Complete review
-        </Button>
-        {blockers.length > 0 && (
-          <ul className="text-sm text-ink-muted" aria-label="Before you can complete this review">
-            {blockers.map((text) => (
-              <li key={text}>· {text}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-      {error && <p className="text-sm font-medium text-danger" role="alert">{error}</p>}
+      <Button variant="primary" disabled={detail.review.blockers.length > 0} loading={busy} onClick={onComplete}>
+        Complete review
+      </Button>
     </div>
   );
 }

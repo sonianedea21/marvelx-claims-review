@@ -11,10 +11,12 @@ type SheetProps = {
   /** bottom: phone. right: a side panel on wider screens. */
   side?: 'bottom' | 'right';
   children: ReactNode;
+  /** Pinned below the scrolling content, e.g. the actions for what's shown. */
+  footer?: ReactNode;
 };
 
 /** A modal panel that slides in from the bottom or the right. Radix handles focus trapping and Escape. */
-export function Sheet({ open, onOpenChange, title, description, side = 'bottom', children }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, description, side = 'bottom', children, footer }: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -23,7 +25,7 @@ export function Sheet({ open, onOpenChange, title, description, side = 'bottom',
           className={cx(
             'fixed z-50 flex flex-col bg-surface shadow-lg focus-visible:outline-none',
             side === 'bottom'
-              ? 'inset-x-0 bottom-0 max-h-11/12 rounded-t-lg'
+              ? 'inset-x-0 top-12 bottom-0 rounded-t-lg'
               : 'inset-y-0 right-0 w-full max-w-reading border-l border-line',
           )}
         >
@@ -41,9 +43,10 @@ export function Sheet({ open, onOpenChange, title, description, side = 'bottom',
               <Icon name="x" label="Close" />
             </Dialog.Close>
           </div>
-          <div data-scroll-container className="min-h-0 flex-1 overflow-y-auto p-4">
+          <div data-scroll-container className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
             {children}
           </div>
+          {footer && <div className="border-t border-line bg-surface p-4">{footer}</div>}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

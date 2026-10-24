@@ -5,7 +5,8 @@ import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import {
-  BackToTop, Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, type JumpItem, type StepItem,
+  BackToTop, Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, LiveIndicator, Skeleton, StepList, useStickyOffset,
+  type JumpItem, type StepItem,
 } from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
 import { ClaimHeader, RunBar } from './ClaimHeader';
@@ -33,6 +34,7 @@ export function ReviewPage() {
   const [opened, setOpened] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<'ack' | 'complete' | 'reopen' | 'retry' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const stickyRef = useStickyOffset<HTMLDivElement>();
 
   if (error) {
     return (
@@ -119,6 +121,17 @@ export function ReviewPage() {
     setBusy(null);
   }
 
+  const progress = (
+    <ReviewProgress
+      detail={detail}
+      attentionCount={openCount}
+      busy={busy === 'complete' || busy === 'reopen'}
+      onComplete={() => run('complete', () => api.complete(id))}
+      onReopen={() => run('reopen', () => api.reopen(id))}
+      error={actionError}
+    />
+  );
+
   /** One field, in the form that fits it: full card, decided row, or compact "looks fine" row. */
   function renderField(field: FieldState, section: 'look' | 'fine') {
     const reviewerOpened = opened.has(field.field_id);
@@ -166,9 +179,8 @@ export function ReviewPage() {
   return (
     <main className="mx-auto max-w-content space-y-5 px-4 pt-2 pb-10">
       <ClaimHeader detail={detail} />
-      {/* Stays in view while the AI is still working. */}
       {detail.run.phase === 'running' && (
-        <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-ai-tint px-4 py-2 sm:mx-0 sm:rounded-md sm:border">
+        <div className="rounded-md border border-line bg-ai-tint px-4 py-2">
           <RunBar detail={detail} />
         </div>
       )}
@@ -191,15 +203,18 @@ export function ReviewPage() {
       >
         {steps.length > 0 ? <StepList steps={steps} /> : <p className="text-sm text-ink-muted">Nothing yet.</p>}
       </Disclosure>
-      <ReviewProgress
-        detail={detail}
-        attentionCount={openCount}
-        busy={busy === 'complete' || busy === 'reopen'}
-        onComplete={() => run('complete', () => api.complete(id))}
-        onReopen={() => run('reopen', () => api.reopen(id))}
-        error={actionError}
-      />
-      {jumpItems.length > 1 && <JumpNav label="Jump to" items={jumpItems} />}
+      {/* Phones: progress scrolls with the page; only the shortcuts stick. */}
+      <div className="lg:hidden">{progress}</div>
+      {/* Sticks to the top while scrolling the fields. Its height feeds --sticky-offset for the source panel. */}
+      <div ref={stickyRef} className="sticky top-0 z-30 -mx-4 space-y-3 border-b border-line bg-paper px-4 py-3 sm:mx-0 sm:px-0">
+        <div className="hidden lg:block">{progress}</div>
+        <div className="flex items-center gap-3">
+          {jumpItems.length > 0 && <JumpNav label="Jump to" items={jumpItems} />}
+          {detail.run.phase === 'running' && (
+            <LiveIndicator className="ml-auto shrink-0 text-xs text-ai-strong">AI still working</LiveIndicator>
+          )}
+        </div>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="min-w-0 space-y-8 lg:col-span-7">
@@ -210,7 +225,7 @@ export function ReviewPage() {
           )}
 
           {lookFields.length > 0 && (
-            <section id="look" className="scroll-mt-16 space-y-3" aria-labelledby="look-title">
+            <section id="look" className="scroll-mt-(--sticky-offset) space-y-3" aria-labelledby="look-title">
               <Heading level={2} id="look-title">
                 Needs a look · {openCount > 0 ? `${openCount} to decide` : 'all decided'}
               </Heading>
@@ -219,7 +234,7 @@ export function ReviewPage() {
           )}
 
           {fineFields.length > 0 && (
-            <section id="fine" className="scroll-mt-16 space-y-3" aria-labelledby="fine-title">
+            <section id="fine" className="scroll-mt-(--sticky-offset) space-y-3" aria-labelledby="fine-title">
               <div className="space-y-1">
                 <Heading level={2} id="fine-title">Looks fine · {fineFields.length}</Heading>
                 <p className="text-sm text-ink-muted">
@@ -244,7 +259,33 @@ export function ReviewPage() {
 
       <BackToTop />
       {!isDesktop && (
-        <SourcePanel claimId={id} field={selected} documentTitles={titles} onClose={() => setSelection('none')} asSheet />
+        <SourcePanel
+          claimId={id}
+          field={selected}
+          documentTitles={titles}
+          onClose={() => setSelection('none')}
+          asSheet
+          actions={
+            selected &&
+            !locked && (
+              // Decide right from the document on a phone; deciding closes the sheet.
+              <DecisionPanel
+                key={selected.field_id}
+                field={selected}
+                locked={locked}
+                saving={Boolean(pending[selected.field_id])}
+                serverError={errors[selected.field_id]}
+                startRevisiting={selected.decision !== null && !selected.outdated}
+                onKeep={() => setSelection('none')}
+                decide={async (action, version, value) => {
+                  const ok = await decideAndFold(selected.field_id, action, version, value);
+                  if (ok) setSelection('none');
+                  return ok;
+                }}
+              />
+            )
+          }
+        />
       )}
     </main>
   );

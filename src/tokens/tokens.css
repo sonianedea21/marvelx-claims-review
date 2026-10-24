@@ -103,6 +103,11 @@
 }
 
 @layer base {
+  :root {
+    /* Height of the page's sticky header, measured at runtime (see useStickyOffset).
+       Sticky side panels and scroll targets sit just below it. */
+    --sticky-offset: 0px;
+  }
   html {
     background-color: var(--color-paper);
     color: var(--color-ink);

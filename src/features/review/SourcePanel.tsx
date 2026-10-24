@@ -1,14 +1,20 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { FieldState } from '../../domain/types';
 import { Excerpt, Sheet, SidePanel, Skeleton } from '../../ui';
 import { useDocument } from './useDocuments';
 
-const CONTEXT_CHARS = 160;
-
-type Props = { claimId: string; field: FieldState | null; documentTitles: Record<string, string>; onClose: () => void; asSheet: boolean };
+type Props = {
+  claimId: string;
+  field: FieldState | null;
+  documentTitles: Record<string, string>;
+  onClose: () => void;
+  asSheet: boolean;
+  /** Phone only: the decision actions, pinned under the document. */
+  actions?: ReactNode;
+};
 
 /** Where a value came from: the document with the cited span highlighted. Side panel on desktop, bottom sheet on phone. */
-export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet }: Props) {
+export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet, actions }: Props) {
   const source = field?.agent.source ?? null;
   const doc = useDocument(claimId, source?.document_id ?? null);
   const markRef = useRef<HTMLDivElement>(null);
@@ -36,16 +42,12 @@ export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet }
     body = <p className="text-sm text-danger">Couldn't load this document. Try again in a moment.</p>;
   } else {
     // Offsets are UTF-16 code units, exactly what String.slice uses.
-    const start = asSheet ? Math.max(0, source.start - CONTEXT_CHARS) : 0;
-    const end = asSheet ? Math.min(doc.text.length, source.end + CONTEXT_CHARS) : doc.text.length;
     body = (
       <div ref={markRef}>
         <Excerpt
-          before={doc.text.slice(start, source.start)}
+          before={doc.text.slice(0, source.start)}
           highlight={doc.text.slice(source.start, source.end)}
-          after={doc.text.slice(source.end, end)}
-          truncatedStart={start > 0}
-          truncatedEnd={end < doc.text.length}
+          after={doc.text.slice(source.end)}
         />
       </div>
     );
@@ -53,7 +55,7 @@ export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet }
 
   if (asSheet) {
     return (
-      <Sheet open={field !== null} onOpenChange={(open) => !open && onClose()} title={title} description={eyebrow}>
+      <Sheet open={field !== null} onOpenChange={(open) => !open && onClose()} title={title} description={eyebrow} footer={actions}>
         {body}
       </Sheet>
     );

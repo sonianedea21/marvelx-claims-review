@@ -7,16 +7,18 @@ type ChoiceGroupProps<T extends string> = {
   options: { value: T; label: string }[];
   value: T | null;
   onChange: (value: T) => void;
+  /** scroll: one sideways-scrolling row on phones (default). wrap: always wrap, e.g. inside a drawer. */
+  layout?: 'scroll' | 'wrap';
   className?: string;
 };
 
 /** A small set of radio buttons drawn as pills (yes / no, filters). Native radios underneath. */
-export function ChoiceGroup<T extends string>({ name, legend, options, value, onChange, className }: ChoiceGroupProps<T>) {
+export function ChoiceGroup<T extends string>({ name, legend, options, value, onChange, layout = 'scroll', className }: ChoiceGroupProps<T>) {
   return (
     <fieldset className={cx('min-w-0 space-y-1.5', className)}>
       <legend className="mb-1.5 text-sm font-medium text-ink">{legend}</legend>
       {/* One scrolling row on phones, wrapping from sm up. The padding keeps focus rings unclipped. */}
-      <div className="-m-1 flex gap-2 overflow-x-auto p-1 sm:flex-wrap sm:overflow-visible">
+      <div className={cx('-m-1 flex gap-2 p-1', layout === 'wrap' ? 'flex-wrap' : 'overflow-x-auto sm:flex-wrap sm:overflow-visible')}>
         {options.map((option) => (
           <label
             key={option.value}

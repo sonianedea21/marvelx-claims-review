@@ -38,7 +38,7 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, sourc
       as="li"
       id={`field-${field.field_id}`}
       edge={field.attention.includes('citation_mismatch') ? 'danger' : field.attention.length > 0 ? 'attention' : 'none'}
-      className={cx('my-3 scroll-mt-16', changedJustNow && 'animate-flash')}
+      className={cx('my-3 scroll-mt-(--sticky-offset)', changedJustNow && 'animate-flash')}
     >
       {/* Clicking anywhere on the card (not on a control) shows its source. The button below does the same for keyboards. */}
       <div
