@@ -12,7 +12,9 @@ description: Add or change a design-system primitive in src/ui/. Use whenever a 
    - Forward `ref` and spread remaining native props for elements that wrap native ones.
    - Use `className` only for layout (margin, grid placement), never to restyle.
 4. **Styling.**
-   - Tokens only: no arbitrary Tailwind values and no hex.
+   - Tokens only: no arbitrary Tailwind values, no hex, no inline `style`. ESLint fails the build on all three in `src/`.
+   - Colour meanings are fixed (see `src/tokens/README.md`): blue (`ai*`) means only "the AI said this"; teal (`human*`) is every reviewer decision; focus, hover and selection are ink; `success` is for system states only.
+   - Badges are square tags (`rounded-sm`); only buttons and choice pills are rounded-full, so status never looks pressable.
    - Every interactive element has hover, focus-visible, active and disabled states, and the focus ring comes from the shared token.
    - Respect `prefers-reduced-motion`.
 5. **Accessibility.**

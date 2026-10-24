@@ -7,7 +7,7 @@ export const STATUS_DISPLAY: Record<ClaimStatus, { label: string; tone: BadgeTon
   running: { label: 'AI is working', tone: 'ai', icon: 'sparkle' },
   needs_review: { label: 'Ready for review', tone: 'info', icon: 'user' },
   reviewed: { label: 'Reviewed', tone: 'success', icon: 'check' },
-  failed: { label: 'AI run failed', tone: 'danger', icon: 'alert' },
+  failed: { label: 'AI run failed', tone: 'danger', icon: 'x_circle' },
 };
 
 export const PRIORITY_LABEL = { high: 'High priority', normal: 'Normal priority', low: 'Low priority' } as const;

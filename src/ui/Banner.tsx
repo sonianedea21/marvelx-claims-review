@@ -5,9 +5,9 @@ import { Icon, type IconName } from './Icon';
 type BannerTone = 'attention' | 'danger' | 'info' | 'success';
 
 const TONE: Record<BannerTone, { box: string; icon: IconName; iconColor: string }> = {
-  attention: { box: 'bg-attention-tint border-attention', icon: 'alert', iconColor: 'text-attention' },
-  danger: { box: 'bg-danger-tint border-danger', icon: 'shield', iconColor: 'text-danger' },
-  info: { box: 'bg-info-tint border-info', icon: 'sparkle', iconColor: 'text-info' },
+  attention: { box: 'bg-attention-tint border-attention', icon: 'eye', iconColor: 'text-attention' },
+  danger: { box: 'bg-danger-tint border-danger', icon: 'x_circle', iconColor: 'text-danger' },
+  info: { box: 'bg-info-tint border-line-strong', icon: 'info', iconColor: 'text-info' },
   success: { box: 'bg-success-tint border-success', icon: 'check', iconColor: 'text-success' },
 };
 

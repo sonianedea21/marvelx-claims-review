@@ -122,3 +122,13 @@ Factual record of what the coding agent (Claude Code) proposed and what Sonia ke
 - **What happened:** a subagent reviewed tokens, `ui/` and the screenshots, and wrote `docs/design/reviews/01-design-system-review.md` (15 findings). Before presenting them, the main agent checked the key claims against the code (highlight 1.0:1, the progress bar rounding 47/49 up to full, success vs human nearly identical in luminance). All three held.
 - **Proposed triage:** A, fix 9 foundation issues in `ui/` now; B, build the missing primitives with the review screen; C, list the rest in the README.
 - **Outcome:** Sonia accepted the triage as proposed.
+
+### Design review fixes (bucket A): done
+- **Blue means only AI:** focus, hover and selection are ink, `accent*` is removed, and `info` is neutral.
+- **Reviewer decisions:** every decision is teal, told apart by icon and word.
+- **Evidence:** a `cite` highlighter token; suspicious text gets its own "not evidence" style; screen-reader markers for the cited span.
+- **Attention vs danger:** yellower attention tint, eye icon for attention, x-circle for danger.
+- **Shapes:** badges are square tags; the selected choice is drawn differently from the primary button.
+- **ProgressBar:** never overstates (unit-tested). Override is no longer red, and the `danger` button variant is removed.
+- **Density:** small buttons are 36px with a mouse and 44px on touch.
+- **Tooling:** ESLint now fails on arbitrary Tailwind values, hex colours and inline styles in `src/`.

@@ -1,25 +1,59 @@
 import { cx } from './cx';
+import { Icon } from './Icon';
 
 type ExcerptProps = {
   before?: string;
   highlight: string;
   after?: string;
-  /** Show "…" where the text was cut. */
-  truncated?: boolean;
+  /** cite: the AI's evidence. suspicious: text that tries to instruct the system, never styled as evidence. */
+  tone?: 'cite' | 'suspicious';
+  /** Show "…" where the surrounding text was cut. */
+  truncatedStart?: boolean;
+  truncatedEnd?: boolean;
   className?: string;
 };
 
 /** Source text with the cited span highlighted. Plain text only: never rendered as HTML. */
-export function Excerpt({ before = '', highlight, after = '', truncated = false, className }: ExcerptProps) {
+export function Excerpt({
+  before = '',
+  highlight,
+  after = '',
+  tone = 'cite',
+  truncatedStart = false,
+  truncatedEnd = false,
+  className,
+}: ExcerptProps) {
+  const suspicious = tone === 'suspicious';
   return (
-    <p className={cx('rounded-md bg-sunken p-3 font-mono text-sm whitespace-pre-wrap text-ink-muted', className)}>
-      {truncated && before && '…'}
-      {before}
-      <mark className="rounded-sm bg-ai-tint px-0.5 text-ink underline decoration-ai decoration-2 underline-offset-4">
-        {highlight}
-      </mark>
-      {after}
-      {truncated && after && '…'}
-    </p>
+    <div
+      className={cx(
+        'max-w-reading rounded-md border p-3 text-sm',
+        suspicious ? 'border-danger bg-danger-tint' : 'border-line bg-surface',
+        className,
+      )}
+    >
+      {suspicious && (
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-danger">
+          <Icon name="shield" size="sm" />
+          Suspicious instruction: this is not evidence
+        </p>
+      )}
+      <p className="font-mono whitespace-pre-wrap text-ink-muted">
+        {truncatedStart && '…'}
+        {before}
+        <span className="sr-only">{suspicious ? 'Suspicious text starts: ' : 'Cited text starts: '}</span>
+        <mark
+          className={cx(
+            'rounded-sm px-0.5 text-ink underline decoration-2 underline-offset-4',
+            suspicious ? 'bg-transparent decoration-danger decoration-wavy' : 'bg-cite decoration-ink',
+          )}
+        >
+          {highlight}
+        </mark>
+        <span className="sr-only">{suspicious ? ' Suspicious text ends.' : ' Cited text ends.'}</span>
+        {after}
+        {truncatedEnd && '…'}
+      </p>
+    </div>
   );
 }

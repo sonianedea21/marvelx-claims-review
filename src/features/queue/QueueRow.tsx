@@ -23,7 +23,7 @@ export function QueueRow({ claim }: { claim: QueueItem }) {
 
         <div className="flex flex-wrap items-center gap-2 sm:col-span-4">
           {claim.status === 'running' ? (
-            <LiveIndicator className="font-medium text-accent-strong">AI is working</LiveIndicator>
+            <LiveIndicator className="font-medium text-ai-strong">AI is working</LiveIndicator>
           ) : (
             <Badge tone={status.tone} icon={status.icon}>
               {status.label}

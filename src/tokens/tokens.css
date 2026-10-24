@@ -23,26 +23,28 @@
   --color-line-strong: #c6cbe8;    /* hover borders, emphasised dividers (decorative) */
   --color-line-input: #868cb3;     /* form control borders: 3:1 against paper and surface */
 
-  /* ---- Colour: the one accent ---- */
-  --color-accent: #3547f0;         /* links, focus ring, selected state */
-  --color-accent-strong: #2835b4;  /* accent text on tints, hover */
-  --color-accent-tint: #ebedfe;
-
-  /* ---- Colour: provenance (who said this) ---- */
+  /* ---- Colour: provenance (who said this) ----
+   * The brand blue is the one accent, and it means only "the AI said this".
+   * Focus, hover, links and selection are ink, so blue never means anything else.
+   * Every reviewer decision (accept, correct, override) is teal, told apart by icon and word. */
   --color-ai: #3547f0;             /* AI-extracted: the agent speaks in the brand blue */
+  --color-ai-strong: #2835b4;      /* AI text on ai-tint */
   --color-ai-tint: #ebedfe;
   --color-human: #0f7a6c;          /* the reviewer's own decisions */
   --color-human-tint: #e3f4f1;
 
+  /* ---- Colour: evidence ---- */
+  --color-cite: #fff1b8;           /* highlighter fill for the cited span (ink on it: 15.9:1) */
+
   /* ---- Colour: semantic ---- */
-  --color-attention: #a14a07;      /* needs a look: low confidence, revised, no source */
-  --color-attention-tint: #fdf2e2;
+  --color-attention: #9a4506;      /* needs a look: low confidence, revised, no source */
+  --color-attention-tint: #fff6d9; /* yellow-leaning, so it separates from danger-tint */
   --color-danger: #b42318;         /* failed run, suspicious instruction, mismatch */
   --color-danger-tint: #fdeceb;
-  --color-success: #1f7a3a;        /* accepted, run finished */
+  --color-success: #1f7a3a;        /* system states only: run finished, review complete */
   --color-success-tint: #e6f4ea;
-  --color-info: #2835b4;
-  --color-info-tint: #ebedfe;
+  --color-info: #4a5078;          /* neutral information: deliberately not blue */
+  --color-info-tint: #eceefb;
   --color-scrim: #0d123c66;        /* overlay behind sheets */
 
   /* ---- Type ---- */
@@ -89,14 +91,14 @@
   }
   /* "AI updated this just now": the accent tint fades out of the element's background. */
   @keyframes flash {
-    0% { background-color: var(--color-accent-tint); }
+    0% { background-color: var(--color-ai-tint); }
     100% { background-color: transparent; }
   }
 }
 
-/* One focus ring for everything interactive. */
+/* One focus ring for everything interactive: ink, with a paper gap so it shows on ink buttons too. */
 @utility focus-ring {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-ink);
   outline-offset: 2px;
 }
 
@@ -111,7 +113,7 @@
     display: none; /* Safari's disclosure triangle; Disclosure draws its own chevron */
   }
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
 }

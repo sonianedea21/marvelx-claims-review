@@ -1,9 +1,13 @@
 import type { SVGProps } from 'react';
+import { cx } from './cx';
 
 // A small inline icon set (24px grid, stroke icons). Decorative by default:
 // meaning is always carried by text next to the icon too.
 const PATHS = {
   alert: 'M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  x_circle: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM15 9l-6 6m0-6 6 6',
+  info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-6v-4m0-4h.01',
   check: 'M20 6 9 17l-5-5',
   x: 'M18 6 6 18M6 6l12 12',
   sparkle: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3ZM19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8L19 17Z',
@@ -39,7 +43,7 @@ export function Icon({ name, size = 'md', label, className, ...rest }: IconProps
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={[size === 'sm' ? 'size-4' : 'size-5', 'shrink-0', className].filter(Boolean).join(' ')}
+      className={cx(size === 'sm' ? 'size-4' : 'size-5', 'shrink-0', className)}
       aria-hidden={label ? undefined : true}
       role={label ? 'img' : undefined}
       aria-label={label}

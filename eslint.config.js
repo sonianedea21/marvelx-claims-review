@@ -2,6 +2,12 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
 
+// "Tokens only" (CLAUDE.md hard rule 5), enforced instead of trusted: no arbitrary
+// Tailwind values like p-[13px] or text-[#333], no hex colours and no inline styles in src/.
+const ARBITRARY_VALUE = '/(^|[\\s:])-?[a-z][a-z0-9-]*-\\[/';
+const HEX_COLOUR = '/#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\\b/';
+const TOKEN_MESSAGE = 'Use a design token from src/tokens/tokens.css. If the value is missing, add a token first.';
+
 export default tseslint.config(
   { ignores: ['dist', 'node_modules', '.screenshots', 'fixtures', 'fixtures-extra'] },
   js.configs.recommended,
@@ -13,6 +19,18 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        { selector: `Literal[value=${ARBITRARY_VALUE}]`, message: `No arbitrary Tailwind values. ${TOKEN_MESSAGE}` },
+        { selector: `TemplateElement[value.raw=${ARBITRARY_VALUE}]`, message: `No arbitrary Tailwind values. ${TOKEN_MESSAGE}` },
+        { selector: `Literal[value=${HEX_COLOUR}]`, message: `No hex colours outside tokens.css. ${TOKEN_MESSAGE}` },
+        { selector: "JSXAttribute[name.name='style']", message: `No inline styles. ${TOKEN_MESSAGE}` },
       ],
     },
   },

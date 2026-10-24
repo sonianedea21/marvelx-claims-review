@@ -1,4 +1,5 @@
 import { cx } from './cx';
+import { Icon } from './Icon';
 
 type ChoiceGroupProps<T extends string> = {
   name: string;
@@ -22,8 +23,9 @@ export function ChoiceGroup<T extends string>({ name, legend, options, value, on
             className={cx(
               'relative inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-full border px-4 text-sm font-medium',
               'has-focus-visible:focus-ring',
+              // Selected reads as "chosen" (ink outline + check), not as the ink-filled primary button.
               value === option.value
-                ? 'border-ink bg-ink text-ink-inverse'
+                ? 'gap-1.5 border-2 border-ink bg-sunken px-3.5 text-ink'
                 : 'border-line-input bg-surface text-ink hover:border-ink',
             )}
           >
@@ -35,6 +37,7 @@ export function ChoiceGroup<T extends string>({ name, legend, options, value, on
               onChange={() => onChange(option.value)}
               className="sr-only"
             />
+            {value === option.value && <Icon name="check" size="sm" />}
             {option.label}
           </label>
         ))}
