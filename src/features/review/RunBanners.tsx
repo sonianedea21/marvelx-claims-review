@@ -1,5 +1,5 @@
 import type { ClaimDetail } from '../../domain/types';
-import { Banner, Button, Excerpt, Icon } from '../../ui';
+import { Banner, Button, Disclosure, Excerpt } from '../../ui';
 import { failureGuidance } from './failureCopy';
 
 type Props = {
@@ -22,10 +22,14 @@ export function RunBanners({ detail, acknowledging, onAcknowledge, retrying, onR
     <>
       {detail.suspicious_instructions.length > 0 &&
         (acknowledged ? (
-          <p className="flex items-center gap-2 text-sm text-danger">
-            <Icon name="shield" size="sm" />
-            You've read the suspicious-instruction warning. Nothing on this claim is pre-approved.
-          </p>
+          <Disclosure summary={<span className="text-danger">You've read the suspicious-instruction warning · show it again</span>}>
+            <div className="space-y-2">
+              {fromDocuments.map((s, i) => (
+                <Excerpt key={i} tone="suspicious" highlight={s.excerpt} />
+              ))}
+              <p className="text-sm text-ink">Nothing on this claim is pre-approved. Claimants can't approve their own claims.</p>
+            </div>
+          </Disclosure>
         ) : (
           <Banner
             tone="danger"

@@ -14,14 +14,16 @@ type Props = {
   saving: boolean;
   serverError: ApiError | undefined;
   decide: (action: DecisionAction, agentVersion: number, value?: FieldValue) => Promise<boolean>;
-  /** Open straight into the actions (the reviewer chose "Change" on a decided field). */
+  /** Open straight into the actions (the reviewer reopened a decided field). */
   startRevisiting?: boolean;
+  /** Called when the reviewer keeps their existing decision, so the card can fold back. */
+  onKeep?: () => void;
 };
 
 type Editing = { mode: 'correct' | 'override'; draft: Draft; versionAtStart: number };
 
 /** Accept / correct / override for one field, the editor, and what to do when the AI changes things. */
-export function DecisionPanel({ field, locked, saving, serverError, decide, startRevisiting = false }: Props) {
+export function DecisionPanel({ field, locked, saving, serverError, decide, startRevisiting = false, onKeep }: Props) {
   const [editing, setEditing] = useState<Editing | null>(null);
   const [revisiting, setRevisiting] = useState(startRevisiting);
   // Accepting a value that contradicts its source, or that the AI is unsure about, takes a second step.
@@ -140,7 +142,12 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
         <FormField
           htmlFor={inputId}
           label={editing.mode === 'correct' ? `Correct the AI's value` : `Your value (replaces the AI's)`}
-          hint={field.value_type === 'time' ? 'Local time at the incident, HH:MM.' : field.value_type === 'money' ? 'Amount only, e.g. 4415.30' : undefined}
+          hint={[
+            editing.mode === 'correct'
+              ? 'For a small mistake: the AI read the right thing but got a detail wrong.'
+              : "For a wrong value: the AI's answer doesn't belong here. Type the right one.",
+            field.value_type === 'time' ? 'Local time at the incident, HH:MM.' : field.value_type === 'money' ? 'Amount only, e.g. 4415.30.' : '',
+          ].join(' ')}
           error={error}
         >
           <ValueEditor
@@ -188,7 +195,14 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
           Override
         </Button>
         {revisiting && decision && (
-          <Button size="sm" variant="ghost" onClick={() => setRevisiting(false)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setRevisiting(false);
+              onKeep?.();
+            }}
+          >
             Keep my decision
           </Button>
         )}

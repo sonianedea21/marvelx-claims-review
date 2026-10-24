@@ -1,6 +1,7 @@
 import { summaryText } from './applyEvent';
 import { deriveClaimStatus, reviewBlockers } from './deriveClaimStatus';
 import { deriveFieldState, latestDecisions } from './deriveFieldState';
+import { isOpen, needsALook } from './needsALook';
 import { detectSuspiciousInstructions } from './suspiciousInstructions';
 import type {
   ClaimDetail, ClaimSeed, DocumentMeta, QueueItem, ReviewState, ReviewerDecision, RunState,
@@ -40,9 +41,10 @@ export function buildClaimDetail(record: ClaimRecord): ClaimDetail {
     updated_at: record.updated_at,
     confidence: run.overall_confidence,
     progress: { decided: fields.filter((f) => f.status !== 'pending').length, total: fields.length },
-    needs_attention: fields.filter((f) => f.attention.length > 0 && f.status === 'pending').length,
+    needs_attention: fields.filter((f) => needsALook(f) && isOpen(f)).length,
     open_conflicts: fields.filter((f) => f.outdated).length,
     suspicious_instructions: suspicious.length > 0,
+    run_error: run.error,
   };
 
   return {

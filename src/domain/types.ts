@@ -188,6 +188,8 @@ export type QueueItem = {
   needs_attention: number;
   open_conflicts: number;
   suspicious_instructions: boolean;
+  /** Set when the run failed: what the AI reported, and whether running it again can help. */
+  run_error: RunError | null;
 };
 
 export type ClaimDetail = {

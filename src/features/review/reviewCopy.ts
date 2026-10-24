@@ -1,6 +1,5 @@
 import type { AttentionReason, DecisionAction, FieldState, ReviewBlocker } from '../../domain/types';
 import type { IconName } from '../../ui';
-import { HIGH_CONFIDENCE } from '../../domain/confidence';
 import { confidenceCopy } from '../shared/confidenceCopy';
 
 /** Why a field needs a look, in plain words. Order matches how serious it is. */
@@ -42,16 +41,4 @@ export function fieldTrust(field: FieldState) {
   return { label: c.label, detail: c.percent, tone };
 }
 
-/**
- * Which section a field lives in depends only on what the AI said, never on the
- * reviewer's decision, so fields don't jump around when the reviewer acts. A field
- * moves to "Needs a look" only when the AI changes it, and that is marked.
- */
-export function needsALook(field: FieldState): boolean {
-  return field.attention.some((r) => r !== 'decision_outdated') || field.agent.confidence < HIGH_CONFIDENCE;
-}
-
-/** Still waiting for the reviewer: undecided, or decided against a value the AI has since changed. */
-export function isOpen(field: FieldState): boolean {
-  return field.status === 'pending' || field.outdated;
-}
+export { isOpen, needsALook } from '../../domain/needsALook';

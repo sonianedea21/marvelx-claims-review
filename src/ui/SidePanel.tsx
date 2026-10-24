@@ -9,7 +9,7 @@ type SidePanelProps = { title: ReactNode; eyebrow?: ReactNode; onClose?: () => v
  */
 export function SidePanel({ title, eyebrow, onClose, children }: SidePanelProps) {
   return (
-    <aside className="sticky top-32 flex max-h-screen flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-sm">
+    <aside className="sticky top-16 flex max-h-screen flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-sm">
       <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
         <div className="min-w-0">
           {eyebrow && <p className="font-mono text-xs tracking-label text-ink-subtle uppercase">{eyebrow}</p>}

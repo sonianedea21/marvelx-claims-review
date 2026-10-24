@@ -4,7 +4,9 @@ import { api } from '../../api/claims';
 import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
-import { Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, type JumpItem, type StepItem } from '../../ui';
+import {
+  BackToTop, Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, type JumpItem, type StepItem,
+} from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
 import { ClaimHeader, RunBar } from './ClaimHeader';
 import { DecisionPanel } from './DecisionPanel';
@@ -129,7 +131,6 @@ export function ReviewPage() {
           selected={selected?.field_id === field.field_id}
           sourceVisible={isDesktop && selected?.field_id === field.field_id}
           onShowSource={() => setSelection(field.field_id)}
-          onCollapse={reviewerOpened ? () => close(field.field_id) : undefined}
         >
           <DecisionPanel
             field={field}
@@ -138,6 +139,7 @@ export function ReviewPage() {
             serverError={errors[field.field_id]}
             startRevisiting={reviewerOpened && field.decision !== null && !field.outdated}
             decide={(action, version, value) => decideAndFold(field.field_id, action, version, value)}
+            onKeep={() => close(field.field_id)}
           />
         </FieldCard>
       );
@@ -162,13 +164,12 @@ export function ReviewPage() {
   }
 
   return (
-    <main className="mx-auto max-w-content space-y-5 px-4 py-6 sm:py-8">
+    <main className="mx-auto max-w-content space-y-5 px-4 pt-2 pb-10">
       <ClaimHeader detail={detail} />
-      {/* Stays in view: whether the AI is still working, and shortcuts to each part of the review. */}
-      {(detail.run.phase === 'running' || jumpItems.length > 1) && (
-        <div className="sticky top-0 z-30 -mx-4 space-y-2 border-b border-line bg-paper px-4 py-2 sm:mx-0 sm:px-0">
+      {/* Stays in view while the AI is still working. */}
+      {detail.run.phase === 'running' && (
+        <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-ai-tint px-4 py-2 sm:mx-0 sm:rounded-md sm:border">
           <RunBar detail={detail} />
-          {jumpItems.length > 1 && <JumpNav label="Jump to" items={jumpItems} />}
         </div>
       )}
       {connection === 'reconnecting' && (
@@ -198,6 +199,7 @@ export function ReviewPage() {
         onReopen={() => run('reopen', () => api.reopen(id))}
         error={actionError}
       />
+      {jumpItems.length > 1 && <JumpNav label="Jump to" items={jumpItems} />}
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="min-w-0 space-y-8 lg:col-span-7">
@@ -208,7 +210,7 @@ export function ReviewPage() {
           )}
 
           {lookFields.length > 0 && (
-            <section id="look" className="scroll-mt-32 space-y-3" aria-labelledby="look-title">
+            <section id="look" className="scroll-mt-16 space-y-3" aria-labelledby="look-title">
               <Heading level={2} id="look-title">
                 Needs a look · {openCount > 0 ? `${openCount} to decide` : 'all decided'}
               </Heading>
@@ -217,7 +219,7 @@ export function ReviewPage() {
           )}
 
           {fineFields.length > 0 && (
-            <section id="fine" className="scroll-mt-32 space-y-3" aria-labelledby="fine-title">
+            <section id="fine" className="scroll-mt-16 space-y-3" aria-labelledby="fine-title">
               <div className="space-y-1">
                 <Heading level={2} id="fine-title">Looks fine · {fineFields.length}</Heading>
                 <p className="text-sm text-ink-muted">
@@ -240,6 +242,7 @@ export function ReviewPage() {
         )}
       </div>
 
+      <BackToTop />
       {!isDesktop && (
         <SourcePanel claimId={id} field={selected} documentTitles={titles} onClose={() => setSelection('none')} asSheet />
       )}

@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import {
-  Badge, Banner, Button, Card, ChoiceGroup, ConfidenceLabel, DecisionStamp, Disclosure, EmptyState, Excerpt, Eyebrow,
-  FormField, Heading, Input, LiveIndicator, ProgressBar, Sheet, SidePanel, Skeleton, StepList, TextArea, ValueChange,
-  type BadgeTone,
+  BackToTop, Badge, Banner, Button, Card, ChoiceGroup, ConfidenceLabel, ConfirmDialog, DecisionStamp, Disclosure,
+  EmptyState, Excerpt, Eyebrow, FormField, Heading, Input, JumpNav, LiveIndicator, ProgressBar, Sheet, SidePanel,
+  Skeleton, StepList, TextArea, Tooltip, ValueChange, type BadgeTone,
 } from '../ui';
 
 // Every token and every ui/ component in every state. Dev only (see App.tsx).
@@ -39,6 +39,7 @@ export function DevComponentsPage() {
     params.get('sheet') === 'bottom' || params.get('sheet') === 'right' ? (params.get('sheet') as 'bottom' | 'right') : null,
   );
   const [choice, setChoice] = useState<'yes' | 'no' | null>('yes');
+  const [confirming, setConfirming] = useState(false);
 
   return (
     <main className="mx-auto max-w-content space-y-10 px-4 py-8">
@@ -265,6 +266,40 @@ export function DevComponentsPage() {
             onChange={setChoice}
           />
         </div>
+      </Section>
+
+      <Section title="JumpNav, Tooltip, ConfirmDialog, BackToTop">
+        <JumpNav
+          label="Jump to"
+          items={[
+            { href: '#', label: 'Needs a look', count: 12, tone: 'attention', icon: 'eye' },
+            { href: '#', label: 'AI changed after you decided', count: 1, tone: 'attention', icon: 'history' },
+            { href: '#', label: 'Looks fine, to accept', count: 35 },
+          ]}
+        />
+        <Row label="Tooltip (hover or focus)">
+          <Tooltip content="The AI said: “The policy service did not respond within 10 seconds.”">
+            <button type="button" className="rounded-sm focus-visible:focus-ring">
+              <Badge tone="danger" icon="x_circle">AI run failed</Badge>
+            </button>
+          </Tooltip>
+        </Row>
+        <Row label="ConfirmDialog">
+          <Button onClick={() => setConfirming(true)}>Accept a value that doesn't match</Button>
+          <ConfirmDialog
+            open={confirming}
+            onOpenChange={setConfirming}
+            title="This doesn't match the source"
+            safeLabel="Correct it instead"
+            onSafe={() => setConfirming(false)}
+            riskyLabel="Accept the AI's value anyway"
+            onRisky={() => setConfirming(false)}
+          >
+            <p>The AI says 22:40, but the document says “23:40”.</p>
+          </ConfirmDialog>
+        </Row>
+        <p className="text-sm text-ink-muted">BackToTop appears at the bottom right once this page is scrolled down.</p>
+        <BackToTop />
       </Section>
 
       <Section title="Sheet">

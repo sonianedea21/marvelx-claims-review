@@ -182,3 +182,14 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 - **Override** now starts from the AI's value (the agent had left it empty). Saving the AI's value unchanged says to use Accept.
 - **Accepting when the AI is unsure (< 70%)** asks first ("Go back and check" is the default), in addition to the existing source-mismatch confirmation.
 - **Jump links:** a sticky row with "Needs a look", "AI changed after you decided" and "Looks fine, to accept", with counts, kept together with the "AI is still working" bar. The agent dropped its own "Decided" link: decided fields stay inside both sections, so there's nowhere single to jump to.
+
+### Sonia's third UX pass: accepted as asked
+- **Warning:** once acknowledged, the suspicious-instruction warning can be opened again ("show it again").
+- **Decided rows:** the whole row reopens the field, with no separate Change button. The Close button on opened cards is removed: an action folds the card, and "Keep my decision" folds it unchanged.
+- **Correct vs override:** Sonia asked what the difference is. Answer: correct = the AI read the right thing but got a detail wrong; override = the AI's value is wrong or doesn't belong. They are kept distinct because corrections are near-misses and overrides are failures, which is how a team would measure the AI. Since override now starts from the AI's value (her earlier request), the two editors looked identical, so each now says what it's for.
+- **Layout:** less space above the claim; the jump links moved under "Complete review" and are no longer sticky; a back-to-top button was added.
+- **Queue:** failed, retryable runs get "Run the AI again" directly on the row, and the "AI run failed" chip has a tooltip with what the AI said. The row became a stretched link, because buttons can't sit inside a link.
+- **Summary:** the "not a fact" chip now appears once per run of flagged sentences, not once per sentence.
+
+### Agent inconsistency found while checking: fixed
+- The queue said "9 need a look" and the review screen said "13" for the same claim. The queue counted only flagged fields, while the review screen also counted fields below 90% confidence. The rule moved into `domain/needsALook.ts` and both screens use it, with a test pinning them together. This is the kind of drift a single domain module exists to prevent.

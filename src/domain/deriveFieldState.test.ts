@@ -2,6 +2,7 @@ import { fixture, record, runState } from '../../server/testFixtures';
 import { applyEvents } from './applyEvent';
 import { buildClaimDetail } from './buildClaimDetail';
 import { deriveFieldState, latestDecisions, sliceCitation } from './deriveFieldState';
+import { needsALook } from './needsALook';
 import type { ReviewerDecision } from './types';
 
 const docs = (id: string) => (docId: string) => fixture(id).documents.find((d) => d.document_id === docId)?.text;
@@ -103,5 +104,16 @@ describe('deriveFieldState', () => {
     const overridden = deriveFieldState(run.fields.incident_time!, decision({ field_id: 'incident_time', action: 'override', value: '23:40', agent_version: 1 }), docs('clm_4817'));
     expect(corrected.status).toBe('corrected');
     expect(overridden.status).toBe('overridden');
+  });
+});
+
+describe('needs a look', () => {
+  it('counts the same fields the review screen shows: flagged or below "likely right"', () => {
+    const detail = buildClaimDetail(record('clm_4817'));
+    const shown = detail.fields.filter((f) => needsALook(f)).map((f) => f.field_id);
+    expect(detail.claim.needs_attention).toBe(shown.length);
+    expect(shown).toContain('incident_time'); // 91% sure, but contradicts its source
+    expect(shown).toContain('parts_total'); // 84%: no flag, but below "likely right"
+    expect(shown).not.toContain('vehicle_mileage'); // exactly 90%: likely right
   });
 });

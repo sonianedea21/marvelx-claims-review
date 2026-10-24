@@ -17,13 +17,11 @@ type Props = {
   selected: boolean;
   /** The source is already on screen (desktop side panel showing this field): no button needed. */
   sourceVisible: boolean;
-  /** Shown when the reviewer opened this card themselves, to fold it back. */
-  onCollapse?: () => void;
   children: ReactNode; // the DecisionPanel
 };
 
 /** A field that needs the reviewer: why, what the AI changed, the cited text, and the decision. */
-export function FieldCard({ field, changedJustNow, onShowSource, selected, sourceVisible, onCollapse, children }: Props) {
+export function FieldCard({ field, changedJustNow, onShowSource, selected, sourceVisible, children }: Props) {
   const trust = fieldTrust(field);
   const show = (v: FieldState['agent']['value']) => formatValue(v, field.value_type);
   // The trust label already says "Doesn't match the source" or "AI is unsure": don't repeat it as a badge.
@@ -40,7 +38,7 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, sourc
       as="li"
       id={`field-${field.field_id}`}
       edge={field.attention.includes('citation_mismatch') ? 'danger' : field.attention.length > 0 ? 'attention' : 'none'}
-      className={cx('my-3 scroll-mt-32', changedJustNow && 'animate-flash')}
+      className={cx('my-3 scroll-mt-16', changedJustNow && 'animate-flash')}
     >
       {/* Clicking anywhere on the card (not on a control) shows its source. The button below does the same for keyboards. */}
       <div
@@ -53,11 +51,7 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, sourc
           <p className="text-sm text-ink-muted">{field.label}</p>
           <div className="flex items-center gap-2">
             <ConfidenceLabel label={trust.label} detail={trust.detail} tone={trust.tone} />
-            {onCollapse && (
-              <Button size="sm" variant="ghost" onClick={onCollapse} aria-label={`Fold ${field.label} back`}>
-                Close
-              </Button>
-            )}
+
           </div>
         </div>
 

@@ -46,9 +46,12 @@ export function SummaryCard({ summary, writing, failed }: Props) {
               <span key={i} className="rounded-sm bg-danger-tint px-0.5">
                 <span className="sr-only">Suspicious sentence: </span>
                 <SummarySentence text={sentence} />
-                <Badge tone="danger" icon="shield" className="mx-1 align-middle">
-                  From the claimant's text, not a fact
-                </Badge>
+                {/* One label after a run of flagged sentences, not one per sentence. */}
+                {!isSuspicious(sentences[i + 1] ?? '') && (
+                  <Badge tone="danger" icon="shield" className="mx-1 align-middle">
+                    From the claimant's text, not a fact
+                  </Badge>
+                )}
               </span>
             ) : (
               <SummarySentence key={i} text={sentence} />

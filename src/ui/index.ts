@@ -1,4 +1,5 @@
 // The design-system primitives. Feature code imports from here.
+export { BackToTop } from './BackToTop';
 export { Badge, type BadgeTone } from './Badge';
 export { Banner } from './Banner';
 export { Button } from './Button';
@@ -21,5 +22,6 @@ export { Sheet } from './Sheet';
 export { SidePanel } from './SidePanel';
 export { Skeleton } from './Skeleton';
 export { StepList, type StepItem } from './StepList';
+export { Tooltip } from './Tooltip';
 export { Eyebrow, Heading } from './Text';
 export { ValueChange } from './ValueChange';

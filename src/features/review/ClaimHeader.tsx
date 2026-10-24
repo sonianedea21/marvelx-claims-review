@@ -11,7 +11,7 @@ export function ClaimHeader({ detail }: { detail: ClaimDetail }) {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-1">
         <Link to="/" className="inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted hover:text-ink focus-visible:focus-ring">
           <Icon name="arrow_left" size="sm" /> Queue
         </Link>
