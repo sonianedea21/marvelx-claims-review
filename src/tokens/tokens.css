@@ -1,10 +1,127 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens. This is the only file allowed to contain raw colour or size values.
- * Provisional neutral set for scaffolding and design exploration; the real
- * palette, type scale and semantic colours land in slice 4.
+ * Design tokens: the only file with raw colour, size or timing values.
+ * Direction "paper & ink, modern", after marvelx.ai: cool paper, navy ink,
+ * one electric-blue accent, serif headings, mono for evidence and metadata.
+ * Documented in src/tokens/README.md. Every token is shown on /dev/components.
+ *
+ * Tailwind's default palette, type scale, radii and shadows are switched off
+ * (`initial`) so only these tokens exist as utilities.
  */
 @theme {
+  /* ---- Colour: neutrals ---- */
+  --color-*: initial;
+  --color-paper: #f5f6fe;          /* page background */
+  --color-surface: #ffffff;        /* cards, panels */
+  --color-sunken: #eceefb;         /* wells: document text, code-like areas */
+  --color-ink: #0d123c;            /* body text, primary buttons */
+  --color-ink-muted: #4a5078;      /* secondary text (AA on paper and surface) */
+  --color-ink-subtle: #62688b;     /* metadata, placeholders (4.7:1 or better on every background) */
+  --color-ink-inverse: #ffffff;
+  --color-line: #e2e5f5;           /* default borders, dividers */
+  --color-line-strong: #c6cbe8;    /* hover borders, emphasised dividers (decorative) */
+  --color-line-input: #868cb3;     /* form control borders: 3:1 against paper and surface */
+
+  /* ---- Colour: the one accent ---- */
+  --color-accent: #3547f0;         /* links, focus ring, selected state */
+  --color-accent-strong: #2835b4;  /* accent text on tints, hover */
+  --color-accent-tint: #ebedfe;
+
+  /* ---- Colour: provenance (who said this) ---- */
+  --color-ai: #3547f0;             /* AI-extracted: the agent speaks in the brand blue */
+  --color-ai-tint: #ebedfe;
+  --color-human: #0f7a6c;          /* the reviewer's own decisions */
+  --color-human-tint: #e3f4f1;
+
+  /* ---- Colour: semantic ---- */
+  --color-attention: #a14a07;      /* needs a look: low confidence, revised, no source */
+  --color-attention-tint: #fdf2e2;
+  --color-danger: #b42318;         /* failed run, suspicious instruction, mismatch */
+  --color-danger-tint: #fdeceb;
+  --color-success: #1f7a3a;        /* accepted, run finished */
+  --color-success-tint: #e6f4ea;
+  --color-info: #2835b4;
+  --color-info-tint: #ebedfe;
+  --color-scrim: #0d123c66;        /* overlay behind sheets */
+
+  /* ---- Type ---- */
+  --font-*: initial;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Libre Baskerville', ui-serif, Georgia, serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --text-*: initial;
+  --text-xs: 0.75rem;   --text-xs--line-height: 1rem;      /* 12: labels, metadata */
+  --text-sm: 0.875rem;  --text-sm--line-height: 1.25rem;   /* 14: secondary text */
+  --text-base: 1rem;    --text-base--line-height: 1.5rem;  /* 16: body, values */
+  --text-lg: 1.25rem;   --text-lg--line-height: 1.75rem;   /* 20: section titles, key values */
+  --text-xl: 1.75rem;   --text-xl--line-height: 2.25rem;   /* 28: page title */
+
+  --tracking-tight: -0.02em;
+  --tracking-label: 0.06em;
+
+  /* ---- Space: Tailwind's 4px scale (p-1 = 4px, p-4 = 16px) is kept as is ---- */
+  --spacing: 0.25rem;
+  --container-content: 72rem;      /* max page width */
+  --container-reading: 44rem;      /* max width for text columns */
+
+  /* ---- Shape ---- */
+  --radius-*: initial;
+  --radius-sm: 0.375rem;           /* 6: tags, small chips */
+  --radius-md: 0.625rem;           /* 10: inputs */
+  --radius-lg: 0.875rem;           /* 14: cards, panels, sheets */
+  --radius-full: 9999px;           /* buttons, badges (pill, like marvelx.ai) */
+
+  --shadow-*: initial;
+  --shadow-sm: 0 1px 2px #0d123c0f;
+  --shadow-md: 0 4px 16px #0d123c14;
+  --shadow-lg: 0 12px 40px #0d123c29;
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --animate-pulse-dot: pulse-dot 1.4s var(--ease-standard) infinite;
+  --animate-flash: flash 2.4s var(--ease-standard) 1;
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  /* "AI updated this just now": the accent tint fades out of the element's background. */
+  @keyframes flash {
+    0% { background-color: var(--color-accent-tint); }
+    100% { background-color: transparent; }
+  }
+}
+
+/* One focus ring for everything interactive. */
+@utility focus-ring {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  summary::-webkit-details-marker {
+    display: none; /* Safari's disclosure triangle; Disclosure draws its own chevron */
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Respect reduced motion everywhere: no pulsing, no flashes, no smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

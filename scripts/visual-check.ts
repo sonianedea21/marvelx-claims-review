@@ -22,6 +22,7 @@ const GROUPS: Record<string, Target[]> = {
     { name: 'review-4817', path: '/claims/clm_4817' },
     { name: 'review-4822-failed', path: '/claims/clm_4822' },
     { name: 'dev-components', path: '/dev/components' },
+    { name: 'dev-components-sheet', path: '/dev/components?sheet=bottom' },
   ],
 };
 

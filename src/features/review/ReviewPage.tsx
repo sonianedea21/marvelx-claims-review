@@ -5,7 +5,7 @@ export function ReviewPage() {
   const { id } = useParams();
   return (
     <main className="p-8">
-      <h1 className="text-2xl font-semibold">Review {id}</h1>
+      <h1 className="font-serif text-xl">Review {id}</h1>
     </main>
   );
 }

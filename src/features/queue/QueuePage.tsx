@@ -13,7 +13,7 @@ export function QueuePage() {
 
   return (
     <main className="p-8">
-      <h1 className="text-2xl font-semibold">Claims queue</h1>
+      <h1 className="font-serif text-xl">Claims queue</h1>
       <p className="mt-2">{health}</p>
     </main>
   );

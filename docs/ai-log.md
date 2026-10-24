@@ -94,3 +94,19 @@ Factual record of what the coding agent (Claude Code) proposed and what Sonia ke
 - **Queue SSE:** sends the full filtered list on every change, not one item. The plan said one item; with this few claims, the browser simply replaces the list.
 - **Extra runs:** `fixtures-extra/` loads only with `EXTRA_RUNS=1`, so the reviewers' queue shows the supplied claims only.
 - **Injection flag:** set from the documents as soon as the claim is loaded, before the agent reaches the statement. The reviewer is warned from the start, independently of the agent.
+
+### Injection flag timing: confirmed by Sonia
+- **Proposed:** flag the claim as soon as it loads, from the documents, before the agent reads the statement.
+- **Sonia:** the warning should pop up the moment it is detected, without waiting for the agent. That matches the implementation, which was kept.
+- **Timebox:** Sonia allowed running up to 1 hour over the 4 hours if needed.
+
+## 2026-10-24 · Slice 4: tokens and ui/
+
+### Visual direction: reworked by Sonia
+- **Proposed:** three directions: "Paper & ink" (warm paper, IBM Plex, deep blue accent, violet for AI), "Clinical slate" and "High-contrast editorial".
+- **Sonia:** chose paper & ink, but asked that it look modern and take inspiration from marvelx.ai.
+- **Outcome:** the agent read the site's computed styles: background #F5F6FE, accent #3547F0, navy #0D123C / #1B2478, Libre Baskerville headings, Inter body, Geist Mono labels, pill buttons. It rebuilt the direction on those. AI provenance uses the brand blue and the reviewer uses teal, so the two never look alike. The violet AI colour and IBM Plex were dropped.
+
+### Agent mistakes caught while building
+- **Contrast:** the first `ink-subtle` was 4.42:1 on paper, below AA 4.5:1, and the input border was 1.6:1 against white, below the 3:1 needed for form controls. Both were caught by computing contrast before use and fixed; `line-input` was added.
+- **Phone overflow:** buttons never wrapped, so a long label pushed the 375px page to 377px. The visual check caught it through the screenshot width, and buttons now wrap.
