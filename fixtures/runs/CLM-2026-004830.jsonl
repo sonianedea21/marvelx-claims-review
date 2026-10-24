@@ -1,0 +1,30 @@
+{"seq":1,"at_ms":0,"type":"run_started","claim_id":"CLM-2026-004830","payload":{"started_at":"2026-09-22T09:31:40+02:00"}}
+{"seq":2,"at_ms":400,"type":"step_started","claim_id":"CLM-2026-004830","payload":{"step_id":"classify","label":"Classify claim"}}
+{"seq":3,"at_ms":1600,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"claim_type","label":"Claim type","value":"Bicycle, theft","value_type":"text","confidence":0.98,"source":{"document_id":"theft-report-004830","start":130,"end":153}}}
+{"seq":4,"at_ms":2100,"type":"step_finished","claim_id":"CLM-2026-004830","payload":{"step_id":"classify","outcome":"ok"}}
+{"seq":5,"at_ms":2500,"type":"step_started","claim_id":"CLM-2026-004830","payload":{"step_id":"read_theft_report","label":"Read police theft report"}}
+{"seq":6,"at_ms":3800,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"police_report_number","label":"Police report number","value":"2026-261-88312","value_type":"text","confidence":0.99,"source":{"document_id":"theft-report-004830","start":40,"end":69}}}
+{"seq":7,"at_ms":5100,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"theft_date","label":"Theft date","value":"2026-09-21","value_type":"date","confidence":0.95,"source":{"document_id":"theft-report-004830","start":224,"end":256}}}
+{"seq":8,"at_ms":6400,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"theft_location","label":"Theft location","value":"Bicycle rack, Amsterdam Sloterdijk station, north side","value_type":"text","confidence":0.93,"source":{"document_id":"theft-report-004830","start":292,"end":353}}}
+{"seq":9,"at_ms":7700,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"bicycle","label":"Bicycle","value":"Gazelle Ultimate C380, black","value_type":"text","confidence":0.97,"source":{"document_id":"theft-report-004830","start":154,"end":198}}}
+{"seq":10,"at_ms":9000,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"frame_number","label":"Frame number","value":"GZ4H218873","value_type":"text","confidence":0.96,"source":{"document_id":"theft-report-004830","start":199,"end":223}}}
+{"seq":11,"at_ms":10300,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"locked","label":"Locked","value":true,"value_type":"boolean","confidence":0.94,"source":{"document_id":"theft-report-004830","start":354,"end":413}}}
+{"seq":12,"at_ms":10800,"type":"step_finished","claim_id":"CLM-2026-004830","payload":{"step_id":"read_theft_report","outcome":"ok"}}
+{"seq":13,"at_ms":11200,"type":"step_started","claim_id":"CLM-2026-004830","payload":{"step_id":"read_receipt","label":"Read purchase receipt"}}
+{"seq":14,"at_ms":12500,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"purchase_date","label":"Purchase date","value":"2025-03-14","value_type":"date","confidence":0.97,"source":{"document_id":"purchase-receipt-004830","start":43,"end":62}}}
+{"seq":15,"at_ms":13800,"type":"field_extracted","claim_id":"CLM-2026-004830","payload":{"field_id":"purchase_price","label":"Purchase price","value":{"amount":"3199.00","currency":"EUR"},"value_type":"money","confidence":0.93,"source":{"document_id":"purchase-receipt-004830","start":115,"end":125}}}
+{"seq":16,"at_ms":14500,"type":"confidence_changed","claim_id":"CLM-2026-004830","payload":{"field_id":"frame_number","confidence":0.99,"reason":"Receipt shows the same frame number."}}
+{"seq":17,"at_ms":14950,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"Theft "}}
+{"seq":18,"at_ms":15400,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"of "}}
+{"seq":19,"at_ms":15850,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"an electric bicycle (Gazelle Ultimate "}}
+{"seq":20,"at_ms":16300,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"C380) from the "}}
+{"seq":21,"at_ms":16750,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"rack outside "}}
+{"seq":22,"at_ms":17200,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"Amsterdam Sloterdijk station on 21 "}}
+{"seq":23,"at_ms":17650,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"September 2026. Reported to "}}
+{"seq":24,"at_ms":18100,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"the police the next "}}
+{"seq":25,"at_ms":18550,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"day. The bicycle was locked "}}
+{"seq":26,"at_ms":19000,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"with two locks. Purchase price "}}
+{"seq":27,"at_ms":19450,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"€ 3,199.00 "}}
+{"seq":28,"at_ms":19900,"type":"summary_delta","claim_id":"CLM-2026-004830","payload":{"text":"in March 2025."}}
+{"seq":29,"at_ms":20400,"type":"step_finished","claim_id":"CLM-2026-004830","payload":{"step_id":"read_receipt","outcome":"ok"}}
+{"seq":30,"at_ms":21300,"type":"run_finished","claim_id":"CLM-2026-004830","payload":{"overall_confidence":0.9}}

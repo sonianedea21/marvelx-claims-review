@@ -1,0 +1,31 @@
+{"seq":1,"at_ms":0,"type":"run_started","claim_id":"CLM-2026-004822","payload":{"started_at":"2026-09-21T11:40:03+02:00"}}
+{"seq":2,"at_ms":400,"type":"step_started","claim_id":"CLM-2026-004822","payload":{"step_id":"classify","label":"Classify claim"}}
+{"seq":3,"at_ms":1800,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"claim_type","label":"Claim type","value":"Home, escape of water","value_type":"text","confidence":0.95,"source":{"document_id":"plumber-report-004822","start":192,"end":215}}}
+{"seq":4,"at_ms":2300,"type":"step_finished","claim_id":"CLM-2026-004822","payload":{"step_id":"classify","outcome":"ok"}}
+{"seq":5,"at_ms":2700,"type":"step_started","claim_id":"CLM-2026-004822","payload":{"step_id":"read_plumber_report","label":"Read plumber's report"}}
+{"seq":6,"at_ms":4000,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"repairer","label":"Repairer","value":"Loodgietersbedrijf De Waal","value_type":"text","confidence":0.97,"source":{"document_id":"plumber-report-004822","start":0,"end":26}}}
+{"seq":7,"at_ms":5300,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"visit_date","label":"Plumber visit","value":"2026-09-21","value_type":"date","confidence":0.96,"source":{"document_id":"plumber-report-004822","start":133,"end":162}}}
+{"seq":8,"at_ms":6600,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"cause_of_damage","label":"Cause","value":"Corroded compression fitting on the cold supply pipe inside the bathroom wall","value_type":"text","confidence":0.9,"source":{"document_id":"plumber-report-004822","start":267,"end":343}}}
+{"seq":9,"at_ms":7900,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"rooms_affected","label":"Rooms affected","value":"Bathroom (14-3); hallway ceiling of the flat below (14-2)","value_type":"text","confidence":0.87,"source":{"document_id":"plumber-report-004822","start":558,"end":642}}}
+{"seq":10,"at_ms":9200,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"repair_cost","label":"Repair cost incl. VAT","value":{"amount":"685.00","currency":"EUR"},"value_type":"money","confidence":0.95,"source":{"document_id":"plumber-report-004822","start":638,"end":672}}}
+{"seq":11,"at_ms":9700,"type":"step_finished","claim_id":"CLM-2026-004822","payload":{"step_id":"read_plumber_report","outcome":"ok"}}
+{"seq":12,"at_ms":10100,"type":"step_started","claim_id":"CLM-2026-004822","payload":{"step_id":"read_statement","label":"Read claimant statement"}}
+{"seq":13,"at_ms":11400,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"discovered_at","label":"Discovered","value":"2026-09-20","value_type":"date","confidence":0.89,"source":{"document_id":"claimant-statement-004822","start":77,"end":114}}}
+{"seq":14,"at_ms":13300,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"damaged_items","label":"Damaged items","value":"Bathroom cabinet, two bath mats, laundry basket, about 30 books stored in the downstairs flat, neighbour's hallway rug","value_type":"long_text","confidence":0.8,"source":{"document_id":"claimant-statement-004822","start":323,"end":576}}}
+{"seq":15,"at_ms":14600,"type":"field_extracted","claim_id":"CLM-2026-004822","payload":{"field_id":"estimated_contents_loss","label":"Claimed contents loss","value":{"amount":"1240.00","currency":"EUR"},"value_type":"money","confidence":0.86,"source":{"document_id":"claimant-statement-004822","start":614,"end":624}}}
+{"seq":16,"at_ms":15050,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"Water leak from a "}}
+{"seq":17,"at_ms":15500,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"corroded "}}
+{"seq":18,"at_ms":15950,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"fitting "}}
+{"seq":19,"at_ms":16400,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"behind the "}}
+{"seq":20,"at_ms":16850,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"bath "}}
+{"seq":21,"at_ms":17300,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"on the second floor "}}
+{"seq":22,"at_ms":17750,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"of Twijnstraat "}}
+{"seq":23,"at_ms":18200,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"14, Utrecht, found on "}}
+{"seq":24,"at_ms":18650,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"20 September "}}
+{"seq":25,"at_ms":19150,"type":"step_finished","claim_id":"CLM-2026-004822","payload":{"step_id":"read_statement","outcome":"ok"}}
+{"seq":26,"at_ms":19550,"type":"step_started","claim_id":"CLM-2026-004822","payload":{"step_id":"lookup_policy","label":"Look up policy"}}
+{"seq":27,"at_ms":20000,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"2026. "}}
+{"seq":28,"at_ms":20450,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"Water reached the "}}
+{"seq":29,"at_ms":20900,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"hallway ceiling of the flat "}}
+{"seq":30,"at_ms":21350,"type":"summary_delta","claim_id":"CLM-2026-004822","payload":{"text":"below. Plumber's repair € 685.00. "}}
+{"seq":31,"at_ms":31750,"type":"run_failed","claim_id":"CLM-2026-004822","payload":{"step_id":"lookup_policy","error":{"code":"policy_service_unavailable","message":"The policy service did not respond within 10 seconds.","retryable":true}}}

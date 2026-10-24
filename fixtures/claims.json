@@ -1,0 +1,46 @@
+[
+  {
+    "id": "clm_4817",
+    "claim_id": "CLM-2026-004817",
+    "claimant_name": "Sanne de Vries",
+    "product": "motor",
+    "priority": "high",
+    "received_at": "2026-09-18T10:05:31+02:00",
+    "run": "runs/CLM-2026-004817.jsonl",
+    "start_after_ms": 0,
+    "initial_status": "queued"
+  },
+  {
+    "id": "clm_4822",
+    "claim_id": "CLM-2026-004822",
+    "claimant_name": "Joost van Leeuwen",
+    "product": "home",
+    "priority": "normal",
+    "received_at": "2026-09-21T11:38:47+02:00",
+    "run": "runs/CLM-2026-004822.jsonl",
+    "start_after_ms": 4000,
+    "initial_status": "queued"
+  },
+  {
+    "id": "clm_4830",
+    "claim_id": "CLM-2026-004830",
+    "claimant_name": "Lotte Hendriks",
+    "product": "bicycle",
+    "priority": "low",
+    "received_at": "2026-09-22T09:30:02+02:00",
+    "run": "runs/CLM-2026-004830.jsonl",
+    "start_after_ms": 20000,
+    "initial_status": "queued"
+  },
+  {
+    "id": "clm_4809",
+    "claim_id": "CLM-2026-004809",
+    "claimant_name": "Daan Mulder",
+    "product": "motor",
+    "priority": "normal",
+    "received_at": "2026-09-17T15:01:10+02:00",
+    "run": "runs/CLM-2026-004809.jsonl",
+    "start_after_ms": null,
+    "initial_status": "needs_review"
+  }
+]

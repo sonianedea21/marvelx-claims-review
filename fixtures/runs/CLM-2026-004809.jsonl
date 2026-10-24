@@ -1,0 +1,24 @@
+{"seq":1,"at_ms":0,"type":"run_started","claim_id":"CLM-2026-004809","payload":{"started_at":"2026-09-17T15:02:55+02:00"}}
+{"seq":2,"at_ms":400,"type":"step_started","claim_id":"CLM-2026-004809","payload":{"step_id":"classify","label":"Classify claim"}}
+{"seq":3,"at_ms":1500,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"claim_type","label":"Claim type","value":"Motor, windscreen","value_type":"text","confidence":0.99,"source":{"document_id":"glass-quote-004809","start":226,"end":248}}}
+{"seq":4,"at_ms":2000,"type":"step_finished","claim_id":"CLM-2026-004809","payload":{"step_id":"classify","outcome":"ok"}}
+{"seq":5,"at_ms":2400,"type":"step_started","claim_id":"CLM-2026-004809","payload":{"step_id":"read_quote","label":"Read repair quote"}}
+{"seq":6,"at_ms":3700,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"vehicle","label":"Vehicle","value":"Toyota Yaris Hybrid, 2022","value_type":"text","confidence":0.97,"source":{"document_id":"glass-quote-004809","start":62,"end":87}}}
+{"seq":7,"at_ms":5000,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"plate","label":"Registration","value":"R-562-TN","value_type":"text","confidence":0.97,"source":{"document_id":"glass-quote-004809","start":89,"end":110}}}
+{"seq":8,"at_ms":6300,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"damage","label":"Damage","value":"Crack of about 12 cm in the driver's line of sight; windscreen to be replaced","value_type":"text","confidence":0.91,"source":{"document_id":"glass-quote-004809","start":119,"end":225}}}
+{"seq":9,"at_ms":7600,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"repair_cost","label":"Repair cost incl. VAT","value":{"amount":"412.50","currency":"EUR"},"value_type":"money","confidence":0.96,"source":{"document_id":"glass-quote-004809","start":280,"end":298}}}
+{"seq":10,"at_ms":8100,"type":"step_finished","claim_id":"CLM-2026-004809","payload":{"step_id":"read_quote","outcome":"ok"}}
+{"seq":11,"at_ms":8500,"type":"step_started","claim_id":"CLM-2026-004809","payload":{"step_id":"lookup_policy","label":"Look up policy"}}
+{"seq":12,"at_ms":9800,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"glass_covered","label":"Glass covered","value":true,"value_type":"boolean","confidence":0.95,"source":{"document_id":"policy-schedule-004809","start":222,"end":236}}}
+{"seq":13,"at_ms":11100,"type":"field_extracted","claim_id":"CLM-2026-004809","payload":{"field_id":"excess","label":"Glass excess","value":{"amount":"0.00","currency":"EUR"},"value_type":"money","confidence":0.95,"source":{"document_id":"policy-schedule-004809","start":237,"end":257}}}
+{"seq":14,"at_ms":11550,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"Windscreen replacement for "}}
+{"seq":15,"at_ms":12000,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"a Toyota Yaris Hybrid after "}}
+{"seq":16,"at_ms":12450,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"a "}}
+{"seq":17,"at_ms":12900,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"stone chip. Quote "}}
+{"seq":18,"at_ms":13350,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"€ "}}
+{"seq":19,"at_ms":13800,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"412.50, "}}
+{"seq":20,"at_ms":14250,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"glass "}}
+{"seq":21,"at_ms":14700,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"is "}}
+{"seq":22,"at_ms":15150,"type":"summary_delta","claim_id":"CLM-2026-004809","payload":{"text":"covered with no excess."}}
+{"seq":23,"at_ms":15650,"type":"step_finished","claim_id":"CLM-2026-004809","payload":{"step_id":"lookup_policy","outcome":"ok"}}
+{"seq":24,"at_ms":16450,"type":"run_finished","claim_id":"CLM-2026-004809","payload":{"overall_confidence":0.95}}

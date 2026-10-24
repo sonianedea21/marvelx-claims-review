@@ -1,0 +1,62 @@
+[
+  {
+    "document_id": "police-report-004817",
+    "claim_id": "CLM-2026-004817",
+    "title": "Police traffic accident report",
+    "kind": "police_report"
+  },
+  {
+    "document_id": "repair-invoice-004817",
+    "claim_id": "CLM-2026-004817",
+    "title": "Repair invoice, Autoherstel Oost",
+    "kind": "invoice"
+  },
+  {
+    "document_id": "claimant-statement-004817",
+    "claim_id": "CLM-2026-004817",
+    "title": "Claimant statement",
+    "kind": "statement"
+  },
+  {
+    "document_id": "policy-schedule-004817",
+    "claim_id": "CLM-2026-004817",
+    "title": "Policy schedule, MotorPlus",
+    "kind": "policy"
+  },
+  {
+    "document_id": "plumber-report-004822",
+    "claim_id": "CLM-2026-004822",
+    "title": "Plumber's report, De Waal",
+    "kind": "repair_report"
+  },
+  {
+    "document_id": "claimant-statement-004822",
+    "claim_id": "CLM-2026-004822",
+    "title": "Claimant statement",
+    "kind": "statement"
+  },
+  {
+    "document_id": "theft-report-004830",
+    "claim_id": "CLM-2026-004830",
+    "title": "Police theft report",
+    "kind": "police_report"
+  },
+  {
+    "document_id": "purchase-receipt-004830",
+    "claim_id": "CLM-2026-004830",
+    "title": "Purchase receipt",
+    "kind": "receipt"
+  },
+  {
+    "document_id": "glass-quote-004809",
+    "claim_id": "CLM-2026-004809",
+    "title": "Windscreen repair quote",
+    "kind": "invoice"
+  },
+  {
+    "document_id": "policy-schedule-004809",
+    "claim_id": "CLM-2026-004809",
+    "title": "Policy schedule, MotorBasic",
+    "kind": "policy"
+  }
+]
