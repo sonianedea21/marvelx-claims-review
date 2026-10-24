@@ -15,6 +15,12 @@ All tokens live in [`tokens.css`](tokens.css) as a Tailwind v4 `@theme` block. T
 | Shape | `rounded-sm` 6, `md` 10, `lg` 14, `full`; `shadow-sm/md/lg` | Pills for buttons and badges, `lg` for cards |
 | Motion | `ease-standard`, `animate-pulse-dot`, `animate-flash` | All motion is switched off under `prefers-reduced-motion` |
 
+**Layers (z-index), bottom to top:**
+- `z-30`: sticky header and back-to-top.
+- `z-40` / `z-50`: sheet scrim and panel.
+- `z-60` / `z-70`: confirmation scrim and dialog, so a confirmation opened from a sheet dims the sheet too.
+- Tooltips use `z-50` but only appear over the page.
+
 **Contrast (checked):** ink 16.7:1, ink-muted 7.2:1, ink-subtle 5.0:1 on paper; every semantic colour is at least 4.6:1 on its own tint; white on ink 18:1 and on accent 6.3:1.
 
 **Rules:** no arbitrary values (`p-[13px]`), no hex outside this file, colour is never the only signal. ESLint enforces the first two in `src/` (see `eslint.config.js`). Missing a value? Add a token here first, then use it.

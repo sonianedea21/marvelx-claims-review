@@ -33,7 +33,7 @@ Restarting clears all reviewer decisions. On a failed, retryable run, "Run the A
 
 ### Time and cuts
 
-About 6 hours (_Sonia: confirm_), against a 4-hour timebox. The two extra hours went into four rounds of hands-on UX review of the review screen (see section 3), which I judged worth more than staying on time. Cut, in the order I'd planned to cut them: the Playwright end-to-end replay test, keyboard shortcuts, a second adversarial design review of the review screen, and the Banner/Card restyle that review asked for.
+About 4.5 hours, against a 4-hour timebox. The extra half hour went into the adversarial reviews: the separate design-review agent, and my own hands-on rounds on the review screen (see section 3). Cut, in the order I'd planned to cut them: the Playwright end-to-end replay test, keyboard shortcuts, a second adversarial design review of the review screen, and the Banner/Card restyle that review asked for.
 
 ## 1. State and data contract
 

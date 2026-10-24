@@ -5,7 +5,7 @@ import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import {
-  BackToTop, Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, LiveIndicator, Skeleton, StepList, useStickyOffset,
+  BackToTop, Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, useStickyOffset,
   type JumpItem, type StepItem,
 } from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
@@ -208,12 +208,7 @@ export function ReviewPage() {
       {/* Sticks to the top while scrolling the fields. Its height feeds --sticky-offset for the source panel. */}
       <div ref={stickyRef} className="sticky top-0 z-30 -mx-4 space-y-3 border-b border-line bg-paper px-4 py-3 sm:mx-0 sm:px-0">
         <div className="hidden lg:block">{progress}</div>
-        <div className="flex items-center gap-3">
-          {jumpItems.length > 0 && <JumpNav label="Jump to" items={jumpItems} />}
-          {detail.run.phase === 'running' && (
-            <LiveIndicator className="ml-auto shrink-0 text-xs text-ai-strong">AI still working</LiveIndicator>
-          )}
-        </div>
+        {jumpItems.length > 0 && <JumpNav label="Jump to" items={jumpItems} />}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-12">

@@ -19,8 +19,9 @@ export function ConfirmDialog({ open, onOpenChange, title, children, safeLabel, 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-scrim" />
-        <Dialog.Content className="fixed inset-x-4 top-1/4 z-50 mx-auto max-w-reading space-y-4 rounded-lg bg-surface p-5 shadow-lg focus-visible:outline-none">
+        {/* Layer 2: above any open sheet, and dims it too (see Layers in src/tokens/README.md). */}
+        <Dialog.Overlay className="fixed inset-0 z-60 bg-scrim" />
+        <Dialog.Content className="fixed inset-x-4 top-1/4 z-70 mx-auto max-w-reading space-y-4 rounded-lg bg-surface p-5 shadow-lg focus-visible:outline-none">
           <Dialog.Title className="font-serif text-lg text-ink">{title}</Dialog.Title>
           <Dialog.Description asChild>
             <div className="space-y-2 text-ink-muted">{children}</div>

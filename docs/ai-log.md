@@ -211,3 +211,8 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 - **Lowercase "AI":** the agent lower-cased the whole blockers sentence, turning "AI" into "ai".
 - **Phone filter drawer:** it was a fixed near-full height. Bottom sheets now fit their content (`sheet-max-h`); only the document sheet is full height.
 - **"Confirm nothing found" inside the phone document sheet:** opening the confirmation moved focus into a second dialog, the sheet treated that as "clicked outside" and closed, unmounting the panel that owned the confirmation. Fixed by ignoring interactions inside another dialog. Verified in the browser for both the unsure confirmation and the source-mismatch confirmation → correct.
+
+### Sixth pass
+- **Stacking:** a confirmation opened from the phone document sheet didn't dim the sheet. Sonia asked whether that's how these components work. Answer: no, a confirmation should be a second modal layer. The agent's z-index values put both scrims at z-40 and both panels at z-50, so the confirmation's scrim sat below the sheet. Layers are now ordered (sheet 40/50, confirmation 60/70) and written down in `src/tokens/README.md`.
+- **"AI still working" label** in the sticky row removed, at Sonia's request (the run bar above already says it).
+- **README time:** set to about 4.5 hours, the extra half hour attributed to the adversarial reviews, as Sonia stated.
