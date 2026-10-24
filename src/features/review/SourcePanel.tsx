@@ -55,7 +55,7 @@ export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet, 
 
   if (asSheet) {
     return (
-      <Sheet open={field !== null} onOpenChange={(open) => !open && onClose()} title={title} description={eyebrow} footer={actions}>
+      <Sheet open={field !== null} onOpenChange={(open) => !open && onClose()} title={title} description={eyebrow} footer={actions} height="full">
         {body}
       </Sheet>
     );

@@ -205,3 +205,9 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 ## 2026-10-24 · README
 - **Drafted:** the agent drafted `README.md` in Sonia's voice from this log and the commits.
 - **Left for Sonia:** the exact time spent and section 6 (Pushback), which is her opinion to give.
+
+### Sonia's fifth pass: bugs in the agent's code, fixed
+- **Progress bar:** it only moved every ~4 accepts. To stay tokens-only, the agent had drawn it in twelfths of a width, so with 49 fields one decision often didn't change it. Replaced with a native `<progress>` styled once in `tokens.css`: exact, accessible, and still never "full" early. The twelfths code and its tests were removed.
+- **Lowercase "AI":** the agent lower-cased the whole blockers sentence, turning "AI" into "ai".
+- **Phone filter drawer:** it was a fixed near-full height. Bottom sheets now fit their content (`sheet-max-h`); only the document sheet is full height.
+- **"Confirm nothing found" inside the phone document sheet:** opening the confirmation moved focus into a second dialog, the sheet treated that as "clicked outside" and closed, unmounting the panel that owned the confirmation. Fixed by ignoring interactions inside another dialog. Verified in the browser for both the unsure confirmation and the source-mismatch confirmation → correct.

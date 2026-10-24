@@ -17,7 +17,7 @@ npm run dev                       # API on :3001, app on http://localhost:5173
 
 | Command | What it does |
 |---|---|
-| `npm test` | 93 Vitest tests: domain, API (supertest), replay clock, one component |
+| `npm test` | 87 Vitest tests: domain, API (supertest), replay clock, one component |
 | `npm run typecheck` / `npm run lint` | TypeScript strict; ESLint, including a rule that fails on arbitrary Tailwind values, hex colours and inline styles |
 | `npm run visual-check` | Screenshots the key screens at 375 and 1280 into `.screenshots/` and fails if any screen scrolls sideways (needs `npm run dev`) |
 

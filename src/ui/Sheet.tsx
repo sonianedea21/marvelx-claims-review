@@ -13,19 +13,27 @@ type SheetProps = {
   children: ReactNode;
   /** Pinned below the scrolling content, e.g. the actions for what's shown. */
   footer?: ReactNode;
+  /** content: as tall as its content (filters). full: nearly the whole screen (a document). Bottom sheets only. */
+  height?: 'content' | 'full';
 };
 
 /** A modal panel that slides in from the bottom or the right. Radix handles focus trapping and Escape. */
-export function Sheet({ open, onOpenChange, title, description, side = 'bottom', children, footer }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, description, side = 'bottom', children, footer, height = 'content' }: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-scrim" />
         <Dialog.Content
+          // A dialog opened from inside the sheet (e.g. a confirmation) is not "outside":
+          // without this, the sheet would close and take that dialog's owner with it.
+          onInteractOutside={(event) => {
+            const target = event.detail.originalEvent.target as HTMLElement | null;
+            if (target?.closest('[role="dialog"], [role="alertdialog"]')) event.preventDefault();
+          }}
           className={cx(
             'fixed z-50 flex flex-col bg-surface shadow-lg focus-visible:outline-none',
             side === 'bottom'
-              ? 'inset-x-0 top-12 bottom-0 rounded-t-lg'
+              ? cx('inset-x-0 bottom-0 rounded-t-lg', height === 'full' ? 'top-12' : 'sheet-max-h')
               : 'inset-y-0 right-0 w-full max-w-reading border-l border-line',
           )}
         >

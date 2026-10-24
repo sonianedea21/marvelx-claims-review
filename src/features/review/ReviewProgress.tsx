@@ -41,7 +41,7 @@ export function ReviewProgress({ detail, attentionCount, busy, onComplete, onReo
           {attentionCount > 0 && <span className="font-medium text-attention">{attentionCount} need a look</span>}
         </p>
         <ProgressBar value={decided} max={total} label={`${decided} of ${total} fields decided`} />
-        {blockers.length > 0 && <p className="text-xs text-ink-muted">Before you can complete: {blockers.join(' · ').toLowerCase()}.</p>}
+        {blockers.length > 0 && <p className="text-xs text-ink-muted">Before you can complete: {blockers.join(' · ')}.</p>}
         {error && <p className="text-sm font-medium text-danger" role="alert">{error}</p>}
       </div>
       <Button variant="primary" disabled={detail.review.blockers.length > 0} loading={busy} onClick={onComplete}>
