@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import type { ClaimSeed, DocumentMeta, RunEvent } from '../src/domain/types';
 
 export type FixtureClaim = {
@@ -8,8 +8,10 @@ export type FixtureClaim = {
   events: RunEvent[];
 };
 
-export const FIXTURES_DIR = fileURLToPath(new URL('../fixtures/', import.meta.url));
-export const EXTRA_FIXTURES_DIR = fileURLToPath(new URL('../fixtures-extra/', import.meta.url));
+// Resolved from the repo root, where every npm script runs. (import.meta.url isn't a
+// file URL under the jsdom test environment, so it can't be used here.)
+export const FIXTURES_DIR = join(process.cwd(), 'fixtures/');
+export const EXTRA_FIXTURES_DIR = join(process.cwd(), 'fixtures-extra/');
 
 /** Reads one fixture pack (claims.json, documents/, runs/) in the format of fixtures/README.md. */
 export function loadFixturePack(dir: string): FixtureClaim[] {

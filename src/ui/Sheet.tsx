@@ -41,7 +41,9 @@ export function Sheet({ open, onOpenChange, title, description, side = 'bottom',
               <Icon name="x" label="Close" />
             </Dialog.Close>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto p-4">{children}</div>
+          <div data-scroll-container className="min-h-0 flex-1 overflow-y-auto p-4">
+            {children}
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

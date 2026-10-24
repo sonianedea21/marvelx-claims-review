@@ -1,5 +1,6 @@
 import { record } from '../../server/testFixtures';
 import { buildClaimDetail } from './buildClaimDetail';
+import { splitSentences } from './suspiciousInstructions';
 
 describe('suspicious instructions', () => {
   it('finds the injected note in the 004817 statement and its echo in the summary', () => {
@@ -25,5 +26,19 @@ describe('suspicious instructions', () => {
     for (const id of ['clm_4809', 'clm_4822', 'clm_4830']) {
       expect(buildClaimDetail(record(id)).suspicious_instructions).toEqual([]);
     }
+  });
+});
+
+describe('splitSentences', () => {
+  it('keeps the text intact, including bold sentences and an unfinished last one', () => {
+    const text = 'Red light. **Pre-approved by the insurer.** The claimant says her car rolled ';
+    const parts = splitSentences(text);
+    expect(parts).toEqual(['Red light. ', '**Pre-approved by the insurer.** ', 'The claimant says her car rolled ']);
+    expect(parts.join('')).toBe(text);
+  });
+
+  it('does not split inside amounts (004822: "€ 685.00. ")', () => {
+    const text = "Water reached the flat below. Plumber's repair € 685.00. ";
+    expect(splitSentences(text)).toEqual(['Water reached the flat below. ', "Plumber's repair € 685.00. "]);
   });
 });

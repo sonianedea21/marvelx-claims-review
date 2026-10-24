@@ -14,7 +14,7 @@ const PATTERNS: RegExp[] = [
   /\bfields can be accepted\b/i,
 ];
 
-function isSuspicious(text: string): boolean {
+export function isSuspicious(text: string): boolean {
   return PATTERNS.some((pattern) => pattern.test(text));
 }
 
@@ -26,10 +26,18 @@ export function findSuspiciousLines(text: string): string[] {
     .filter((line) => line.length > 0 && isSuspicious(line));
 }
 
-/** The summary is one paragraph, so it is split into sentences (a sentence may end in "**" bold markdown). */
+/**
+ * Splits a paragraph into sentences, keeping the whitespace after each one so
+ * joining them gives the original text back. A sentence may end in "**" (bold markdown).
+ */
+export function splitSentences(text: string): string[] {
+  // A sentence ends at . ! or ? followed by whitespace (or the end), so "685.00" and "4,415.30" stay whole.
+  return text.match(/[\s\S]*?[.!?]+\**(?:\s+|$)|[\s\S]+$/g) ?? [];
+}
+
+/** The summary is one paragraph, so it is checked sentence by sentence. */
 export function findSuspiciousSentences(text: string): string[] {
-  return text
-    .split(/(?<=[.!?]\**)\s+/)
+  return splitSentences(text)
     .map((sentence) => sentence.trim())
     .filter((sentence) => sentence.length > 0 && isSuspicious(sentence));
 }

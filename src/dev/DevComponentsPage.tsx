@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import {
-  Badge, Banner, Button, Card, ChoiceGroup, Disclosure, EmptyState, Excerpt, Eyebrow, FormField, Heading,
-  Input, LiveIndicator, ProgressBar, Sheet, Skeleton, TextArea, type BadgeTone,
+  Badge, Banner, Button, Card, ChoiceGroup, ConfidenceLabel, DecisionStamp, Disclosure, EmptyState, Excerpt, Eyebrow,
+  FormField, Heading, Input, LiveIndicator, ProgressBar, Sheet, SidePanel, Skeleton, StepList, TextArea, ValueChange,
+  type BadgeTone,
 } from '../ui';
 
 // Every token and every ui/ component in every state. Dev only (see App.tsx).
@@ -182,6 +183,46 @@ export function DevComponentsPage() {
           <Skeleton lines={3} />
           <Skeleton shape="block" />
           <EmptyState title="No claims match these filters">Try another status or priority.</EmptyState>
+        </div>
+      </Section>
+
+      <Section title="Confidence, changes, decisions">
+        <Row label="ConfidenceLabel">
+          <ConfidenceLabel label="Likely right" detail="97%" tone="neutral" />
+          <ConfidenceLabel label="Check this" detail="84%" tone="attention" />
+          <ConfidenceLabel label="AI is unsure" detail="41%" tone="danger" />
+          <ConfidenceLabel label="Doesn't match the source" detail="AI said 91% sure" tone="danger" />
+        </Row>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ValueChange byline="AI changed this (version 1 → 2)" from="€3,605.80" to="€4,415.30" reason="Page 2 adds supplements of € 669.01 excl. VAT; the page 1 figure was an estimate." />
+          <ValueChange tone="human" byline="You corrected this" from="22:40" to="23:40" />
+          <DecisionStamp title="You accepted this" icon="check" />
+          <DecisionStamp title="You corrected this" icon="pencil" detail={<p>Your value: <strong>23:40</strong></p>} actions={<Button size="sm" variant="ghost">Change decision</Button>} />
+          <DecisionStamp
+            title="You accepted this"
+            icon="check"
+            stale={<p>You decided on <strong>€3,605.80</strong>. The AI now says <strong>€4,415.30</strong>.</p>}
+            actions={<><Button size="sm" variant="primary">Keep mine (€3,605.80)</Button><Button size="sm">Review again</Button></>}
+          />
+        </div>
+      </Section>
+
+      <Section title="StepList">
+        <StepList
+          steps={[
+            { id: 'a', label: 'Classify claim', status: 'done' },
+            { id: 'b', label: 'Assess liability', status: 'warning', note: 'Claimant statement and police narrative disagree on whether vehicle A moved.' },
+            { id: 'c', label: 'Look up policy', status: 'failed', note: 'The policy service did not respond within 10 seconds.' },
+            { id: 'd', label: 'Cross-check amounts', status: 'running' },
+          ]}
+        />
+      </Section>
+
+      <Section title="SidePanel (non-modal, desktop)">
+        <div className="max-w-reading">
+          <SidePanel eyebrow="Police traffic accident report" title="Incident time" onClose={() => undefined}>
+            <Excerpt before="Time of incident: " highlight="23:40" after={'\nLocation: Wibautstraat at Ringdijk'} />
+          </SidePanel>
         </div>
       </Section>
 

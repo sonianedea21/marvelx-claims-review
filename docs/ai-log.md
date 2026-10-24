@@ -132,3 +132,23 @@ Factual record of what the coding agent (Claude Code) proposed and what Sonia ke
 - **ProgressBar:** never overstates (unit-tested). Override is no longer red, and the `danger` button variant is removed.
 - **Density:** small buttons are 36px with a mouse and 44px on touch.
 - **Tooling:** ESLint now fails on arbitrary Tailwind values, hex colours and inline styles in `src/`.
+
+## 2026-10-24 · Slice 6: review screen
+
+### Deferred decisions: all accepted as proposed
+- **Confidence:** 3 bands ("Likely right" ≥ 0.9, "Check this" 0.7–0.9, "AI is unsure" < 0.7) with the percentage as secondary text; a citation mismatch replaces the band.
+- **Flagged summary:** stays open at the top; flagged sentences are marked inline, with the danger banner above until acknowledged.
+- **Failed run:** honest copy plus what the reviewer can still do. No fake Retry button.
+
+### Review screen: bugs the agent introduced and caught
+Caught by driving the real flow in a browser (Playwright) and by the visual check:
+- **Page scrolling:** `scrollIntoView` on the source highlight scrolled the whole page, not just the panel, so the claim opened halfway down: the "content moves under the reviewer" problem the design rules forbid. It now scrolls only inside the panel's own scroll container.
+- **Summary text:** the agent's sentence splitter broke at every full stop, so "€ 685.00." became "€ 685." and "00.", which markdown then read as a numbered list and swallowed; "incl. VAT" lost its space. It now splits only at punctuation followed by whitespace, with a test using the 004822 text. React-markdown also trimmed the space between sentences, which is now restored.
+- **Noise:** the stale-decision card showed three near-identical "AI changed this" badges, and "Doesn't match the source" appeared twice. Reduced to one badge per message.
+- **Test environment:** the fixture loader used `import.meta.url`, which isn't a file URL under jsdom. Paths are now resolved from the repo root.
+
+### Verified flow
+- Accept the page-1 total (€3,605.80) at 50 s. The AI revises it to €4,415.30 at 53.8 s.
+- The card shows "You accepted this, but the AI changed it since", with Keep mine / Review again. The decision stays as made.
+- "Keep mine" records an override against version 2.
+- Covered by a component test (`DecisionPanel.test.tsx`), together with: the editor stays open with the reviewer's draft when a revision lands mid-edit, and client-side validation runs before sending.
