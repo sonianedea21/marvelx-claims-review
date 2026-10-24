@@ -3,7 +3,7 @@ import type { ApiError } from '../../api/client';
 import { formatValue } from '../../domain/format';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import { sameValue, validateValue } from '../../domain/validateValue';
-import { Banner, Button, DecisionStamp, FormField } from '../../ui';
+import { Banner, Button, ConfirmDialog, DecisionStamp, FormField } from '../../ui';
 import { DECISION_COPY } from './reviewCopy';
 import { draftFrom, draftToInput, ValueEditor, type Draft } from './ValueEditor';
 
@@ -13,14 +13,17 @@ type Props = {
   saving: boolean;
   serverError: ApiError | undefined;
   decide: (action: DecisionAction, agentVersion: number, value?: FieldValue) => Promise<boolean>;
+  /** Open straight into the actions (the reviewer chose "Change" on a decided field). */
+  startRevisiting?: boolean;
 };
 
 type Editing = { mode: 'correct' | 'override'; draft: Draft; versionAtStart: number };
 
 /** Accept / correct / override for one field, the editor, and what to do when the AI changes things. */
-export function DecisionPanel({ field, locked, saving, serverError, decide }: Props) {
+export function DecisionPanel({ field, locked, saving, serverError, decide, startRevisiting = false }: Props) {
   const [editing, setEditing] = useState<Editing | null>(null);
-  const [revisiting, setRevisiting] = useState(false);
+  const [revisiting, setRevisiting] = useState(startRevisiting);
+  const [confirmingMismatch, setConfirmingMismatch] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const show = (v: FieldValue) => formatValue(v, field.value_type);
   const decision = field.decision;
@@ -36,6 +39,12 @@ export function DecisionPanel({ field, locked, saving, serverError, decide }: Pr
       setEditing(null);
       setRevisiting(false);
     }
+  }
+
+  /** Accepting a value that contradicts its own source needs a second, deliberate step. */
+  function accept() {
+    if (field.citation_check === 'mismatch') setConfirmingMismatch(true);
+    else submit('accept');
   }
 
   async function saveEdit() {
@@ -110,7 +119,13 @@ export function DecisionPanel({ field, locked, saving, serverError, decide }: Pr
     const error = clientError ?? (serverError && serverError.status !== 409 ? serverError.message : null);
     const changedWhileEditing = field.agent.version !== editing.versionAtStart;
     return (
-      <div className="space-y-3 rounded-md border border-line bg-paper p-3">
+      <form
+        className="space-y-3 rounded-md border border-line bg-paper p-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          saveEdit();
+        }}
+      >
         {changedWhileEditing && (
           <Banner tone="attention" title="The AI changed this while you were editing">
             <p>
@@ -136,23 +151,29 @@ export function DecisionPanel({ field, locked, saving, serverError, decide }: Pr
           />
         </FormField>
         <div className="flex flex-wrap gap-2">
-          <Button variant="primary" size="sm" loading={saving} onClick={saveEdit}>
+          <Button type="submit" variant="primary" size="sm" loading={saving}>
             {changedWhileEditing ? 'Save my value anyway' : editing.mode === 'correct' ? 'Save correction' : 'Save override'}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setEditing(null)}>
             Cancel
           </Button>
         </div>
-      </div>
+      </form>
     );
   }
 
-  // ---- Not decided yet ----
+  // ---- Not decided yet, or reconsidering ----
   return (
     <div className="space-y-2">
+      {revisiting && decision && (
+        <p className="text-sm text-human">
+          Your current decision: {DECISION_COPY[decision.action].done.replace(' this', '')}, <strong>{show(decision.value)}</strong>. It
+          stays until you choose something else.
+        </p>
+      )}
       {serverError && <p className="text-sm font-medium text-danger" role="alert">{serverError.message}</p>}
       <div className="flex flex-wrap gap-2">
-        <Button variant="primary" size="sm" icon="check" loading={saving} onClick={() => submit('accept')}>
+        <Button variant="primary" size="sm" icon="check" loading={saving} onClick={accept}>
           {field.agent.value === null ? 'Confirm nothing found' : 'Accept'}
         </Button>
         {field.agent.value !== null && (
@@ -163,12 +184,33 @@ export function DecisionPanel({ field, locked, saving, serverError, decide }: Pr
         <Button size="sm" icon="swap" onClick={() => startEditing('override')}>
           Override
         </Button>
-        {revisiting && (
+        {revisiting && decision && (
           <Button size="sm" variant="ghost" onClick={() => setRevisiting(false)}>
-            Cancel
+            Keep my decision
           </Button>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmingMismatch}
+        onOpenChange={setConfirmingMismatch}
+        title="This doesn't match the source"
+        safeLabel="Correct it instead"
+        onSafe={() => {
+          setConfirmingMismatch(false);
+          startEditing('correct');
+        }}
+        riskyLabel="Accept the AI's value anyway"
+        onRisky={() => {
+          setConfirmingMismatch(false);
+          submit('accept');
+        }}
+      >
+        <p>
+          The AI says <strong className="text-ink">{show(field.agent.value)}</strong>, but the document says{' '}
+          <strong className="text-ink">“{field.cited_text}”</strong>.
+        </p>
+        <p>Accept the AI's value only if you've checked and the document is wrong.</p>
+      </ConfirmDialog>
     </div>
   );
 }

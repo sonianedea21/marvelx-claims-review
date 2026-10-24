@@ -2,6 +2,7 @@ import { Router, type Request } from 'express';
 import { validateDecision } from '../../src/domain/validateDecision';
 import { CLAIM_STATUSES, PRIORITIES, type ClaimStatus, type Priority, type QueueItem } from '../../src/domain/types';
 import { openEventStream } from '../sse';
+import type { ReplayClock } from '../replayClock';
 import type { ClaimStore } from '../store';
 
 const STATUS_ORDER: ClaimStatus[] = ['needs_review', 'running', 'failed', 'queued', 'reviewed'];
@@ -9,7 +10,7 @@ const STATUS_ORDER: ClaimStatus[] = ['needs_review', 'running', 'failed', 'queue
 type QueueFilter = { status?: ClaimStatus; priority?: Priority };
 type FilterResult = { ok: true; filter: QueueFilter } | { ok: false; error: object };
 
-export function claimsRouter(store: ClaimStore) {
+export function claimsRouter(store: ClaimStore, clock?: ReplayClock) {
   const router = Router();
 
   router.get('/claims', (req, res) => {
@@ -89,6 +90,29 @@ export function claimsRouter(store: ClaimStore) {
     }
     store.complete(id);
     res.json(store.detail(id));
+  });
+
+  router.post('/claims/:id/reopen', (req, res) => {
+    const id = req.params.id;
+    const detail = store.detail(id);
+    if (!detail) return res.status(404).json(notFound(id));
+    if (detail.claim.status !== 'reviewed') {
+      return res.status(409).json({ error: 'not_reviewed', message: 'Only a completed review can be reopened.' });
+    }
+    store.reopen(id);
+    res.json(store.detail(id));
+  });
+
+  // "Run the AI again": only for a failed run the agent marked as retryable.
+  router.post('/claims/:id/retry', (req, res) => {
+    const id = req.params.id;
+    const detail = store.detail(id);
+    if (!detail) return res.status(404).json(notFound(id));
+    if (detail.run.phase !== 'failed' || !detail.run.error?.retryable || !clock) {
+      return res.status(409).json({ error: 'not_retryable', message: 'Only a failed run that can be retried can run again.' });
+    }
+    clock.rerun(id);
+    res.status(202).json(store.detail(id));
   });
 
   return router;

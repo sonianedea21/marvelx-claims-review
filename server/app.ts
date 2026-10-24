@@ -12,7 +12,7 @@ export function createApp(store: ClaimStore, clock?: ReplayClock) {
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
   });
-  app.use('/api', claimsRouter(store));
+  app.use('/api', claimsRouter(store, clock));
   if (clock && process.env.NODE_ENV !== 'production') app.use('/api', devRouter(clock));
 
   return app;

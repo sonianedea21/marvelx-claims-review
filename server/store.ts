@@ -80,6 +80,18 @@ export class ClaimStore {
     this.touch(id);
   }
 
+  /** Back to "Ready for review", keeping every decision. */
+  reopen(id: string) {
+    this.mustGet(id).review.completed_at = null;
+    this.touch(id);
+  }
+
+  /** Clears the run so it can be delivered again. Decisions are kept. */
+  resetRun(id: string) {
+    this.mustGet(id).run = emptyRunState();
+    this.touch(id);
+  }
+
   complete(id: string) {
     const record = this.mustGet(id);
     record.review.completed_at = this.now().toISOString();

@@ -15,14 +15,20 @@ type Props = {
 
 /**
  * A high-confidence, cited, unchanged field: value, trust and the cited words in
- * one line, so a one-tap Accept is still an informed one. "Check" opens the full
- * card (source, correct, override).
+ * one line, so a one-tap Accept is still an informed one. Clicking the row opens
+ * the full card in place (source, correct, override).
  */
 export function FieldRow({ field, saving, error, locked, onAccept, onOpen, selected }: Props) {
   const trust = fieldTrust(field);
   return (
     <li className="grid gap-2 py-3 sm:grid-cols-12 sm:items-center sm:gap-4">
-      <div className="min-w-0 sm:col-span-7">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-expanded={selected}
+        aria-label={`Open ${field.label} to check it against its source`}
+        className="-mx-2 min-w-0 rounded-md px-2 py-1 text-left hover:bg-paper focus-visible:focus-ring sm:col-span-7"
+      >
         <p className="text-sm text-ink-muted">{field.label}</p>
         <p className="font-medium break-words">{formatValue(field.agent.value, field.value_type)}</p>
         {field.cited_text && (
@@ -30,21 +36,16 @@ export function FieldRow({ field, saving, error, locked, onAccept, onOpen, selec
             Source: “{field.cited_text.replace(/\s+/g, ' ')}”
           </p>
         )}
-        {error && <p className="text-sm font-medium text-danger" role="alert">{error}</p>}
-      </div>
+      </button>
       <div className="flex items-center justify-between gap-2 sm:col-span-5 sm:justify-end">
         <ConfidenceLabel label={trust.label} detail={trust.detail} tone={trust.tone} />
         {!locked && (
-          <div className="flex gap-1">
-            <Button size="sm" variant="ghost" onClick={onOpen} aria-pressed={selected}>
-              Check
-            </Button>
-            <Button size="sm" icon="check" loading={saving} onClick={onAccept}>
-              Accept
-            </Button>
-          </div>
+          <Button size="sm" icon="check" loading={saving} onClick={onAccept} aria-label={`Accept ${field.label}`}>
+            Accept
+          </Button>
         )}
       </div>
+      {error && <p className="text-sm font-medium text-danger sm:col-span-12" role="alert">{error}</p>}
     </li>
   );
 }

@@ -43,7 +43,7 @@ export function SummaryCard({ summary, writing, failed }: Props) {
         <p className="max-w-reading leading-relaxed text-ink">
           {sentences.map((sentence, i) =>
             isSuspicious(sentence) ? (
-              <span key={i} className="rounded-sm bg-danger-tint px-0.5 underline decoration-danger decoration-wavy underline-offset-4">
+              <span key={i} className="rounded-sm bg-danger-tint px-0.5">
                 <span className="sr-only">Suspicious sentence: </span>
                 <SummarySentence text={sentence} />
                 <Badge tone="danger" icon="shield" className="mx-1 align-middle">

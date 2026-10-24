@@ -40,7 +40,7 @@ export function ClaimHeader({ detail }: { detail: ClaimDetail }) {
       {run.phase === 'running' && (
         <div className="sticky top-0 z-30 -mx-4 border-b border-line bg-ai-tint px-4 py-2 sm:mx-0 sm:rounded-md sm:border">
           <LiveIndicator className="font-medium text-ai-strong">
-            The AI is still working{run.current_step ? ` · ${run.current_step.label}` : '…'}. Fields can still change.
+            {run.current_step ? `The AI is still working · ${run.current_step.label}.` : 'The AI is starting.'} Fields can still change.
           </LiveIndicator>
         </div>
       )}

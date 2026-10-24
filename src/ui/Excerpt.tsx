@@ -28,7 +28,7 @@ export function Excerpt({
     <div
       className={cx(
         'max-w-reading rounded-md border p-3 text-sm',
-        suspicious ? 'border-danger bg-danger-tint' : 'border-line bg-surface',
+        suspicious ? 'border-danger border-l-4 bg-danger-tint' : 'border-line bg-surface',
         className,
       )}
     >
@@ -44,8 +44,8 @@ export function Excerpt({
         <span className="sr-only">{suspicious ? 'Suspicious text starts: ' : 'Cited text starts: '}</span>
         <mark
           className={cx(
-            'rounded-sm px-0.5 text-ink underline decoration-2 underline-offset-4',
-            suspicious ? 'bg-transparent decoration-danger decoration-wavy' : 'bg-cite decoration-ink',
+            'rounded-sm px-0.5 text-ink',
+            suspicious ? 'bg-transparent' : 'bg-cite underline decoration-ink decoration-2 underline-offset-4',
           )}
         >
           {highlight}

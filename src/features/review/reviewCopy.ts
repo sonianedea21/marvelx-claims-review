@@ -1,5 +1,6 @@
 import type { AttentionReason, DecisionAction, FieldState, ReviewBlocker } from '../../domain/types';
 import type { IconName } from '../../ui';
+import { HIGH_CONFIDENCE } from '../../domain/confidence';
 import { confidenceCopy } from '../shared/confidenceCopy';
 
 /** Why a field needs a look, in plain words. Order matches how serious it is. */
@@ -23,7 +24,7 @@ export function blockerCopy(blocker: ReviewBlocker, counts: { undecided: number;
     case 'run_not_finished':
       return failed ? 'The AI run stopped part-way, so this review cannot be completed yet' : 'Wait for the AI to finish';
     case 'fields_undecided':
-      return `Decide the remaining ${counts.undecided} ${counts.undecided === 1 ? 'field' : 'fields'}`;
+      return counts.undecided > 0 ? `Decide the remaining ${counts.undecided} ${counts.undecided === 1 ? 'field' : 'fields'}` : null;
     case 'decisions_outdated':
       return `Re-check ${counts.outdated} ${counts.outdated === 1 ? 'field' : 'fields'} the AI changed after you decided`;
     case 'warning_not_acknowledged':
@@ -41,8 +42,16 @@ export function fieldTrust(field: FieldState) {
   return { label: c.label, detail: c.percent, tone };
 }
 
-/** A field needs the reviewer's attention if anything is flagged and it isn't settled yet. */
-export function needsAttention(field: FieldState): boolean {
-  if (field.outdated) return true;
-  return field.status === 'pending' && (field.attention.length > 0 || field.agent.confidence < 0.9);
+/**
+ * Which section a field lives in depends only on what the AI said, never on the
+ * reviewer's decision, so fields don't jump around when the reviewer acts. A field
+ * moves to "Needs a look" only when the AI changes it, and that is marked.
+ */
+export function needsALook(field: FieldState): boolean {
+  return field.attention.some((r) => r !== 'decision_outdated') || field.agent.confidence < HIGH_CONFIDENCE;
+}
+
+/** Still waiting for the reviewer: undecided, or decided against a value the AI has since changed. */
+export function isOpen(field: FieldState): boolean {
+  return field.status === 'pending' || field.outdated;
 }

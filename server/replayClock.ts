@@ -36,6 +36,20 @@ export class ReplayClock {
     }
   }
 
+  /**
+   * Runs one claim's recording again from now ("Run the AI again"). A real system
+   * would call the agent; here the same recording replays, so 004822 fails the same way.
+   */
+  rerun(claimId: string) {
+    const fixture = this.fixtures.find((f) => f.seed.id === claimId);
+    if (!fixture) return;
+    this.store.resetRun(claimId);
+    const speed = this.options.speed > 0 ? this.options.speed : 1;
+    for (const event of fixture.events) {
+      this.timers.push(setTimeout(() => this.store.deliver(claimId, event), event.at_ms / speed));
+    }
+  }
+
   stop() {
     for (const timer of this.timers) clearTimeout(timer);
     this.timers = [];

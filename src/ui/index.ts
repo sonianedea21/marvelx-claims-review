@@ -4,6 +4,7 @@ export { Banner } from './Banner';
 export { Button } from './Button';
 export { Card } from './Card';
 export { ConfidenceLabel } from './ConfidenceLabel';
+export { ConfirmDialog } from './ConfirmDialog';
 export { DecisionStamp } from './DecisionStamp';
 export { ChoiceGroup } from './ChoiceGroup';
 export { cx } from './cx';

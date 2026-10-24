@@ -1,10 +1,16 @@
 import type { ClaimDetail } from '../../domain/types';
 import { Banner, Button, Excerpt, Icon } from '../../ui';
 
-type Props = { detail: ClaimDetail; acknowledging: boolean; onAcknowledge: () => void };
+type Props = {
+  detail: ClaimDetail;
+  acknowledging: boolean;
+  onAcknowledge: () => void;
+  retrying: boolean;
+  onRetry: () => void;
+};
 
 /** The two things that must be seen before anything else: suspicious instructions and a failed run. */
-export function RunBanners({ detail, acknowledging, onAcknowledge }: Props) {
+export function RunBanners({ detail, acknowledging, onAcknowledge, retrying, onRetry }: Props) {
   const fromDocuments = detail.suspicious_instructions.filter((s) => s.where === 'document');
   const inSummary = detail.suspicious_instructions.some((s) => s.where === 'summary');
   const acknowledged = detail.review.warning_acknowledged_at !== null;
@@ -44,12 +50,22 @@ export function RunBanners({ detail, acknowledging, onAcknowledge }: Props) {
         ))}
 
       {error && (
-        <Banner tone="danger" title={`The AI stopped before finishing: ${detail.run.steps.find((s) => s.step_id === error.step_id)?.label ?? error.step_id}`}>
+        <Banner
+          tone="danger"
+          title={`The AI stopped before finishing: ${detail.run.steps.find((s) => s.step_id === error.step_id)?.label ?? error.step_id}`}
+          actions={
+            error.retryable && (
+              <Button variant="primary" icon="refresh" loading={retrying} onClick={onRetry}>
+                Run the AI again
+              </Button>
+            )
+          }
+        >
           <p className="text-ink">{error.message}</p>
           <p>
             {error.retryable
-              ? 'This can be retried: the AI can run again on this claim.'
-              : "This can't be retried as is: the AI needs a person to fix the cause first."}
+              ? 'This looks temporary, so the AI can try again. Your decisions so far are kept.'
+              : "Running it again won't help: a person needs to fix the cause first."}
           </p>
           <p>
             You can still check the {detail.fields.length} {detail.fields.length === 1 ? 'field' : 'fields'} it found, but the

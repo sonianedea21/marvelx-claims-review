@@ -133,3 +133,31 @@ describe('GET /api/claims/:id/events (SSE)', () => {
     }
   });
 });
+
+describe('reopening and re-running', () => {
+  it('reopens a completed review, keeping the decisions', async () => {
+    const app = finishedApp();
+    const claim = await request(app).get('/api/claims/clm_4809');
+    for (const field of claim.body.fields) {
+      await request(app).post('/api/claims/clm_4809/decisions').send({ field_id: field.field_id, action: 'accept', agent_version: 1 });
+    }
+    await request(app).post('/api/claims/clm_4809/complete');
+    const res = await request(app).post('/api/claims/clm_4809/reopen');
+    expect(res.status).toBe(200);
+    expect(res.body.claim.status).toBe('needs_review');
+    expect(res.body.claim.progress.decided).toBe(7);
+  });
+
+  it('refuses to reopen a claim that is not reviewed, and to re-run one that did not fail', async () => {
+    const app = finishedApp();
+    expect((await request(app).post('/api/claims/clm_4809/reopen')).status).toBe(409);
+    expect((await request(app).post('/api/claims/clm_4809/retry')).status).toBe(409);
+    expect((await request(app).post('/api/claims/clm_9002/retry')).body.error).toBe('not_retryable'); // retryable: false
+  });
+
+  it('re-runs a retryable failed run from the start', async () => {
+    const res = await request(finishedApp()).post('/api/claims/clm_4822/retry');
+    expect(res.status).toBe(202);
+    expect(res.body.run.phase).toBe('not_started');
+  });
+});

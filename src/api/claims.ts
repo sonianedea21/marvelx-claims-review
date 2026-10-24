@@ -31,6 +31,9 @@ export const api = {
   acknowledgeWarning: (id: string) =>
     request<ClaimDetail>(`/api/claims/${encodeURIComponent(id)}/acknowledge-warning`, { method: 'POST' }),
 
+  reopen: (id: string) => request<ClaimDetail>(`/api/claims/${encodeURIComponent(id)}/reopen`, { method: 'POST' }),
+  retry: (id: string) => request<ClaimDetail>(`/api/claims/${encodeURIComponent(id)}/retry`, { method: 'POST' }),
+
   complete: (id: string) => request<ClaimDetail>(`/api/claims/${encodeURIComponent(id)}/complete`, { method: 'POST' }),
 
   replayOptions: () => request<{ speed: number; seekMs: number }>('/api/dev/replay'),

@@ -3,14 +3,15 @@ import { Link, useParams } from 'react-router';
 import { api } from '../../api/claims';
 import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
-import type { FieldState } from '../../domain/types';
+import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import { Banner, Button, Card, Disclosure, EmptyState, Heading, Skeleton, StepList, type StepItem } from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
 import { ClaimHeader } from './ClaimHeader';
 import { DecisionPanel } from './DecisionPanel';
 import { FieldCard } from './FieldCard';
+import { DecidedRow } from './DecidedRow';
 import { FieldRow } from './FieldRow';
-import { needsAttention } from './reviewCopy';
+import { isOpen, needsALook } from './reviewCopy';
 import { ReviewProgress } from './ReviewProgress';
 import { RunBanners } from './RunBanners';
 import { SourcePanel } from './SourcePanel';
@@ -24,10 +25,12 @@ export function ReviewPage() {
   const recentlyChanged = useRecentlyChanged(detail?.fields);
   const { decide, pending, errors } = useDecide(id);
   const isDesktop = useIsDesktop();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [busy, setBusy] = useState<'ack' | 'complete' | null>(null);
-  const [completeError, setCompleteError] = useState<string | null>(null);
+  // null: show the default (first field that needs a look, on desktop). 'none': the reviewer closed the panel.
+  const [selection, setSelection] = useState<string | 'none' | null>(null);
+  // Fields the reviewer opened themselves (a "looks fine" row, or "Change" on a decided field).
+  const [opened, setOpened] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState<'ack' | 'complete' | 'reopen' | 'retry' | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   if (error) {
     return (
@@ -57,13 +60,14 @@ export function ReviewPage() {
   }
 
   const locked = detail.claim.status === 'reviewed';
-  const attention = detail.fields.filter((f) => needsAttention(f) || expanded.has(f.field_id));
-  const fine = detail.fields.filter((f) => f.status === 'pending' && !attention.includes(f));
-  const decided = detail.fields.filter((f) => f.status !== 'pending' && !attention.includes(f));
-  // On desktop the source panel always has something useful: the first field that needs a look.
-  const selected =
-    detail.fields.find((f) => f.field_id === selectedId) ?? (isDesktop ? attention[0] ?? null : null);
+  const lookFields = detail.fields.filter(needsALook);
+  const fineFields = detail.fields.filter((f) => !needsALook(f));
+  const openCount = lookFields.filter(isOpen).length;
   const titles = Object.fromEntries(detail.documents.map((d) => [d.document_id, d.title]));
+  const selected =
+    selection === 'none'
+      ? null
+      : detail.fields.find((f) => f.field_id === selection) ?? (isDesktop ? lookFields.find(isOpen) ?? null : null);
   const steps: StepItem[] = detail.run.steps.map((s) => ({
     id: s.step_id,
     label: s.label,
@@ -71,27 +75,74 @@ export function ReviewPage() {
     note: s.note,
   }));
 
-  const decisionPanel = (field: FieldState) => (
-    <DecisionPanel
-      field={field}
-      locked={locked}
-      saving={Boolean(pending[field.field_id])}
-      serverError={errors[field.field_id]}
-      decide={(action, version, value) => decide(field.field_id, action, version, value)}
-    />
-  );
+  function open(fieldId: string) {
+    setOpened((current) => new Set(current).add(fieldId));
+    setSelection(fieldId);
+  }
 
-  async function acknowledge() {
-    setBusy('ack');
-    await api.acknowledgeWarning(id).catch(() => undefined);
+  function close(fieldId: string) {
+    setOpened((current) => {
+      const next = new Set(current);
+      next.delete(fieldId);
+      return next;
+    });
+  }
+
+  /** Saves a decision; a card the reviewer opened folds back into its one-line row. */
+  async function decideAndFold(fieldId: string, action: DecisionAction, version: number, value?: FieldValue) {
+    const ok = await decide(fieldId, action, version, value);
+    if (ok) close(fieldId);
+    return ok;
+  }
+
+  async function run(kind: 'ack' | 'complete' | 'reopen' | 'retry', action: () => Promise<unknown>) {
+    setBusy(kind);
+    setActionError(null);
+    await action().catch((e: ApiError) => setActionError(e.message));
     setBusy(null);
   }
 
-  async function complete() {
-    setBusy('complete');
-    setCompleteError(null);
-    await api.complete(id).catch((e: ApiError) => setCompleteError(e.message));
-    setBusy(null);
+  /** One field, in the form that fits it: full card, decided row, or compact "looks fine" row. */
+  function renderField(field: FieldState, section: 'look' | 'fine') {
+    const reviewerOpened = opened.has(field.field_id);
+    if (reviewerOpened || (section === 'look' && isOpen(field))) {
+      return (
+        <FieldCard
+          key={field.field_id}
+          field={field}
+          changedJustNow={recentlyChanged.has(field.field_id)}
+          selected={selected?.field_id === field.field_id}
+          onShowSource={() => setSelection(field.field_id)}
+          onCollapse={reviewerOpened ? () => close(field.field_id) : undefined}
+        >
+          <DecisionPanel
+            field={field}
+            locked={locked}
+            saving={Boolean(pending[field.field_id])}
+            serverError={errors[field.field_id]}
+            startRevisiting={reviewerOpened && field.decision !== null && !field.outdated}
+            decide={(action, version, value) => decideAndFold(field.field_id, action, version, value)}
+          />
+        </FieldCard>
+      );
+    }
+    if (field.decision) {
+      return (
+        <DecidedRow key={field.field_id} field={field} locked={locked} boxed={section === 'look'} onChange={() => open(field.field_id)} />
+      );
+    }
+    return (
+      <FieldRow
+        key={field.field_id}
+        field={field}
+        locked={locked}
+        saving={Boolean(pending[field.field_id])}
+        error={errors[field.field_id]?.message}
+        selected={selected?.field_id === field.field_id}
+        onAccept={() => decide(field.field_id, 'accept', field.agent.version)}
+        onOpen={() => open(field.field_id)}
+      />
+    );
   }
 
   return (
@@ -100,14 +151,29 @@ export function ReviewPage() {
       {connection === 'reconnecting' && (
         <p className="text-sm text-ink-subtle" role="status">Reconnecting… showing the last update.</p>
       )}
-      <RunBanners detail={detail} acknowledging={busy === 'ack'} onAcknowledge={acknowledge} />
+      <RunBanners
+        detail={detail}
+        acknowledging={busy === 'ack'}
+        onAcknowledge={() => run('ack', () => api.acknowledgeWarning(id))}
+        retrying={busy === 'retry'}
+        onRetry={() => run('retry', () => api.retry(id))}
+      />
       <SummaryCard summary={detail.run.summary} writing={detail.run.phase === 'running'} failed={detail.run.phase === 'failed'} />
+      {/* Open while the AI works, folded once it's done. The key remounts it when the phase changes. */}
+      <Disclosure
+        key={detail.run.phase}
+        defaultOpen={detail.run.phase === 'running'}
+        summary={`What the AI did · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`}
+      >
+        {steps.length > 0 ? <StepList steps={steps} /> : <p className="text-sm text-ink-muted">Nothing yet.</p>}
+      </Disclosure>
       <ReviewProgress
         detail={detail}
-        attentionCount={attention.length}
-        completing={busy === 'complete'}
-        onComplete={complete}
-        error={completeError}
+        attentionCount={openCount}
+        busy={busy === 'complete' || busy === 'reopen'}
+        onComplete={() => run('complete', () => api.complete(id))}
+        onReopen={() => run('reopen', () => api.reopen(id))}
+        error={actionError}
       />
 
       <div className="grid gap-6 lg:grid-cols-12">
@@ -118,81 +184,41 @@ export function ReviewPage() {
             </EmptyState>
           )}
 
-          {attention.length > 0 && (
-            <section className="space-y-3" aria-labelledby="attention-title">
-              <Heading level={2} id="attention-title">Needs your attention · {attention.length}</Heading>
-              <ul className="space-y-3">
-                {attention.map((field) => (
-                  <FieldCard
-                    key={field.field_id}
-                    field={field}
-                    changedJustNow={recentlyChanged.has(field.field_id)}
-                    selected={selected?.field_id === field.field_id}
-                    onShowSource={() => setSelectedId(field.field_id)}
-                  >
-                    {decisionPanel(field)}
-                  </FieldCard>
-                ))}
-              </ul>
+          {lookFields.length > 0 && (
+            <section className="space-y-3" aria-labelledby="look-title">
+              <Heading level={2} id="look-title">
+                Needs a look · {openCount > 0 ? `${openCount} to decide` : 'all decided'}
+              </Heading>
+              <ul className="space-y-3">{lookFields.map((field) => renderField(field, 'look'))}</ul>
             </section>
           )}
 
-          {fine.length > 0 && (
+          {fineFields.length > 0 && (
             <section className="space-y-3" aria-labelledby="fine-title">
               <div className="space-y-1">
-                <Heading level={2} id="fine-title">Looks fine · {fine.length}</Heading>
-                <p className="text-sm text-ink-muted">AI is at least 90% sure, the value matches its source, and the AI hasn't changed it.</p>
+                <Heading level={2} id="fine-title">Looks fine · {fineFields.length}</Heading>
+                <p className="text-sm text-ink-muted">
+                  The AI is at least 90% sure, the value matches its source, and the AI hasn't changed it. Click a row to check it.
+                </p>
               </div>
               <Card padding="none">
                 <ul className="divide-y divide-line px-4">
-                  {fine.map((field) => (
-                    <FieldRow
-                      key={field.field_id}
-                      field={field}
-                      locked={locked}
-                      saving={Boolean(pending[field.field_id])}
-                      error={errors[field.field_id]?.message}
-                      selected={selectedId === field.field_id}
-                      onAccept={() => decide(field.field_id, 'accept', field.agent.version)}
-                      onOpen={() => {
-                        setExpanded((e) => new Set(e).add(field.field_id));
-                        setSelectedId(field.field_id);
-                      }}
-                    />
-                  ))}
+                  {fineFields.map((field) => renderField(field, 'fine'))}
                 </ul>
               </Card>
             </section>
           )}
-
-          {decided.length > 0 && (
-            <section className="space-y-3" aria-labelledby="decided-title">
-              <Heading level={2} id="decided-title">Decided · {decided.length}</Heading>
-              <ul className="space-y-2">
-                {decided.map((field) => (
-                  <li key={field.field_id} className="space-y-1">
-                    <p className="text-sm text-ink-muted">{field.label}</p>
-                    {decisionPanel(field)}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          <Disclosure summary={`What the AI did · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`}>
-            {steps.length > 0 ? <StepList steps={steps} /> : <p className="text-sm text-ink-muted">Nothing yet.</p>}
-          </Disclosure>
         </div>
 
         {isDesktop && (
           <div className="lg:col-span-5">
-            <SourcePanel claimId={id} field={selected} documentTitles={titles} onClose={() => setSelectedId(null)} asSheet={false} />
+            <SourcePanel claimId={id} field={selected} documentTitles={titles} onClose={() => setSelection('none')} asSheet={false} />
           </div>
         )}
       </div>
 
       {!isDesktop && (
-        <SourcePanel claimId={id} field={selected} documentTitles={titles} onClose={() => setSelectedId(null)} asSheet />
+        <SourcePanel claimId={id} field={selected} documentTitles={titles} onClose={() => setSelection('none')} asSheet />
       )}
     </main>
   );

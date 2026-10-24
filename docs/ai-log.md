@@ -152,3 +152,24 @@ Caught by driving the real flow in a browser (Playwright) and by the visual chec
 - The card shows "You accepted this, but the AI changed it since", with Keep mine / Review again. The decision stays as made.
 - "Keep mine" records an override against version 2.
 - Covered by a component test (`DecisionPanel.test.tsx`), together with: the editor stays open with the reviewer's draft when a revision lands mid-edit, and client-side validation runs before sending.
+
+### Sonia's hands-on UX review of the review screen: reworked
+Sonia used the screen and reported 12 problems. Factual list of what was wrong and what changed:
+- **Bugs in the agent's code:**
+  - **✕ did nothing:** the agent's "show the first attention field by default" logic reopened the panel straight after closing. Fixed with an explicit "closed" state.
+  - **"2 need your attention" after accepting:** "Check" kept a field in the attention section after it was decided.
+  - **"Accept seems to do nothing":** the row jumped to a "Decided" list far below with no feedback.
+  - **"Decide the remaining 0 fields":** shown before the AI had found any fields.
+  - **Enter didn't submit:** the editor wasn't a form.
+- **Design reworked as Sonia asked:**
+  - A field's section now depends only on what the AI said, never on the reviewer's decision, so nothing jumps.
+  - Decided fields fold in place into one row (label, value, "You accepted", Change). The bulky "You accepted this" boxes and the Decided section are gone.
+  - Clicking a row opens it in place, with no separate Check button. Clicking a card shows its source.
+  - "Change" opens the full card with the value, AI history, document text and the current decision.
+  - Accepting a value that contradicts its source opens a confirmation; "Correct it instead" is the default.
+  - "What the AI did" moved up under the summary: open while the AI works, folded when it finishes.
+  - The wavy underline on suspicious text was removed (red tint, label and left rule kept).
+- **Product decisions (Sonia chose the recommended options):**
+  - A completed review is locked, with "Reopen review", which keeps the decisions (`POST /reopen`).
+  - Failed retryable runs get "Run the AI again" (`POST /retry`), which replays that claim's recording; a real system would call the agent. Non-retryable failures say a person must fix the cause.
+- **Question answered without code:** priority comes from the insurer in the fixture. It only sorts the queue (within each status) and tags high priority; it doesn't change the review. SLA timers go under "What next".

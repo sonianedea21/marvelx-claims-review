@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { formatValue } from '../../domain/format';
 import type { FieldState } from '../../domain/types';
-import { Badge, Button, Card, ConfidenceLabel, Excerpt, ValueChange } from '../../ui';
+import { Badge, Button, Card, ConfidenceLabel, cx, Excerpt, ValueChange } from '../../ui';
 import { ATTENTION_COPY, fieldTrust } from './reviewCopy';
 
 const CITE_PREVIEW = 240;
@@ -15,11 +15,13 @@ type Props = {
   changedJustNow: boolean;
   onShowSource: () => void;
   selected: boolean;
+  /** Shown when the reviewer opened this card themselves, to fold it back. */
+  onCollapse?: () => void;
   children: ReactNode; // the DecisionPanel
 };
 
 /** A field that needs the reviewer: why, what the AI changed, the cited text, and the decision. */
-export function FieldCard({ field, changedJustNow, onShowSource, selected, children }: Props) {
+export function FieldCard({ field, changedJustNow, onShowSource, selected, onCollapse, children }: Props) {
   const trust = fieldTrust(field);
   const show = (v: FieldState['agent']['value']) => formatValue(v, field.value_type);
   // The trust label already says "Doesn't match the source" or "AI is unsure": don't repeat it as a badge.
@@ -32,11 +34,28 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, child
   const previous = field.history.slice(0, -1);
 
   return (
-    <Card as="li" edge={field.attention.includes('citation_mismatch') ? 'danger' : 'attention'} className={changedJustNow ? 'animate-flash' : undefined}>
-      <div className="space-y-3">
+    <Card
+      as="li"
+      edge={field.attention.includes('citation_mismatch') ? 'danger' : field.attention.length > 0 ? 'attention' : 'none'}
+      className={cx('my-3', changedJustNow && 'animate-flash')}
+    >
+      {/* Clicking anywhere on the card (not on a control) shows its source. The button below does the same for keyboards. */}
+      <div
+        className="space-y-3"
+        onClick={(event) => {
+          if (!(event.target as HTMLElement).closest('button, input, textarea, label, a, form')) onShowSource();
+        }}
+      >
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
           <p className="text-sm text-ink-muted">{field.label}</p>
-          <ConfidenceLabel label={trust.label} detail={trust.detail} tone={trust.tone} />
+          <div className="flex items-center gap-2">
+            <ConfidenceLabel label={trust.label} detail={trust.detail} tone={trust.tone} />
+            {onCollapse && (
+              <Button size="sm" variant="ghost" onClick={onCollapse} aria-label={`Fold ${field.label} back`}>
+                Close
+              </Button>
+            )}
+          </div>
         </div>
 
         <p className={field.value_type === 'long_text' ? 'text-base' : 'text-lg font-semibold'}>
