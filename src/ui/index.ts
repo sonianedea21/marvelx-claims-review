@@ -14,6 +14,7 @@ export { Excerpt } from './Excerpt';
 export { FormField } from './FormField';
 export { Icon, type IconName } from './Icon';
 export { Input, TextArea } from './Input';
+export { JumpNav, type JumpItem } from './JumpNav';
 export { LiveIndicator } from './LiveIndicator';
 export { ProgressBar } from './ProgressBar';
 export { Sheet } from './Sheet';

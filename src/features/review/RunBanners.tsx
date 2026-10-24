@@ -1,5 +1,6 @@
 import type { ClaimDetail } from '../../domain/types';
 import { Banner, Button, Excerpt, Icon } from '../../ui';
+import { failureGuidance } from './failureCopy';
 
 type Props = {
   detail: ClaimDetail;
@@ -61,11 +62,13 @@ export function RunBanners({ detail, acknowledging, onAcknowledge, retrying, onR
             )
           }
         >
-          <p className="text-ink">{error.message}</p>
-          <p>
-            {error.retryable
-              ? 'This looks temporary, so the AI can try again. Your decisions so far are kept.'
-              : "Running it again won't help: a person needs to fix the cause first."}
+          <p className="text-ink">{failureGuidance(error.code, error.retryable).cause}</p>
+          <p className="text-ink">
+            <strong>What to do:</strong> {failureGuidance(error.code, error.retryable).nextStep}
+            {error.retryable && ' Your decisions so far are kept.'}
+          </p>
+          <p className="text-xs">
+            The AI said: “{error.message}” · error code <code className="font-mono">{error.code}</code>
           </p>
           <p>
             You can still check the {detail.fields.length} {detail.fields.length === 1 ? 'field' : 'fields'} it found, but the

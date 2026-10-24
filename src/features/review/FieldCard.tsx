@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { formatValue } from '../../domain/format';
 import type { FieldState } from '../../domain/types';
-import { Badge, Button, Card, ConfidenceLabel, cx, Excerpt, ValueChange } from '../../ui';
+import { Badge, Button, Card, ConfidenceLabel, cx, Excerpt, Icon, ValueChange } from '../../ui';
 import { ATTENTION_COPY, fieldTrust } from './reviewCopy';
 
 const CITE_PREVIEW = 240;
@@ -15,13 +15,15 @@ type Props = {
   changedJustNow: boolean;
   onShowSource: () => void;
   selected: boolean;
+  /** The source is already on screen (desktop side panel showing this field): no button needed. */
+  sourceVisible: boolean;
   /** Shown when the reviewer opened this card themselves, to fold it back. */
   onCollapse?: () => void;
   children: ReactNode; // the DecisionPanel
 };
 
 /** A field that needs the reviewer: why, what the AI changed, the cited text, and the decision. */
-export function FieldCard({ field, changedJustNow, onShowSource, selected, onCollapse, children }: Props) {
+export function FieldCard({ field, changedJustNow, onShowSource, selected, sourceVisible, onCollapse, children }: Props) {
   const trust = fieldTrust(field);
   const show = (v: FieldState['agent']['value']) => formatValue(v, field.value_type);
   // The trust label already says "Doesn't match the source" or "AI is unsure": don't repeat it as a badge.
@@ -36,8 +38,9 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, onCol
   return (
     <Card
       as="li"
+      id={`field-${field.field_id}`}
       edge={field.attention.includes('citation_mismatch') ? 'danger' : field.attention.length > 0 ? 'attention' : 'none'}
-      className={cx('my-3', changedJustNow && 'animate-flash')}
+      className={cx('my-3 scroll-mt-32', changedJustNow && 'animate-flash')}
     >
       {/* Clicking anywhere on the card (not on a control) shows its source. The button below does the same for keyboards. */}
       <div
@@ -89,9 +92,15 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, onCol
           <div className="space-y-1.5">
             <p className="text-xs text-ink-subtle">The document says:</p>
             <Excerpt highlight={shorten(field.cited_text)} truncatedEnd={field.cited_text.length > CITE_PREVIEW} />
-            <Button size="sm" variant="ghost" icon="document" onClick={onShowSource} aria-pressed={selected}>
-              {selected ? 'Showing in the document' : 'See it in the document'}
-            </Button>
+            {sourceVisible ? (
+              <p className="flex items-center gap-1.5 text-sm text-ink-muted">
+                <Icon name="document" size="sm" /> Highlighted in the document on the right
+              </p>
+            ) : (
+              <Button size="sm" variant="ghost" icon="document" onClick={onShowSource} aria-pressed={selected}>
+                See it in the document
+              </Button>
+            )}
           </div>
         ) : (
           <p className="text-sm text-ink-muted">No document backs this value. Check it by hand.</p>

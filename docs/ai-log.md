@@ -173,3 +173,12 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
   - A completed review is locked, with "Reopen review", which keeps the decisions (`POST /reopen`).
   - Failed retryable runs get "Run the AI again" (`POST /retry`), which replays that claim's recording; a real system would call the agent. Non-retryable failures say a person must fix the cause.
 - **Question answered without code:** priority comes from the insurer in the fixture. It only sorts the queue (within each status) and tags high priority; it doesn't change the review. SLA timers go under "What next".
+
+### Sonia's second UX pass: all accepted as asked
+- **Failed run guidance:** the agent only reports a code and message, so `features/review/failureCopy.ts` maps known codes to a plain cause and next step, with a fallback that says to pass it on with the error code. The AI's own message and code are shown in small print.
+- **Steps title:** "What the AI is doing · n steps so far" while running, and "…before it stopped" on failure.
+- **Clicking a decided row reopens it,** showing the current decision.
+- **Source button:** the agent's "Showing in the document" button did nothing when the source was already on screen. It's replaced by a plain "Highlighted in the document on the right" note on desktop.
+- **Override** now starts from the AI's value (the agent had left it empty). Saving the AI's value unchanged says to use Accept.
+- **Accepting when the AI is unsure (< 70%)** asks first ("Go back and check" is the default), in addition to the existing source-mismatch confirmation.
+- **Jump links:** a sticky row with "Needs a look", "AI changed after you decided" and "Looks fine, to accept", with counts, kept together with the "AI is still working" bar. The agent dropped its own "Decided" link: decided fields stay inside both sections, so there's nowhere single to jump to.

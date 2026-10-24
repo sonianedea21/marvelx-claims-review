@@ -4,6 +4,7 @@ import { formatValue } from '../../domain/format';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import { sameValue, validateValue } from '../../domain/validateValue';
 import { Banner, Button, ConfirmDialog, DecisionStamp, FormField } from '../../ui';
+import { LOW_CONFIDENCE } from '../../domain/confidence';
 import { DECISION_COPY } from './reviewCopy';
 import { draftFrom, draftToInput, ValueEditor, type Draft } from './ValueEditor';
 
@@ -23,14 +24,16 @@ type Editing = { mode: 'correct' | 'override'; draft: Draft; versionAtStart: num
 export function DecisionPanel({ field, locked, saving, serverError, decide, startRevisiting = false }: Props) {
   const [editing, setEditing] = useState<Editing | null>(null);
   const [revisiting, setRevisiting] = useState(startRevisiting);
-  const [confirmingMismatch, setConfirmingMismatch] = useState(false);
+  // Accepting a value that contradicts its source, or that the AI is unsure about, takes a second step.
+  const [confirming, setConfirming] = useState<'mismatch' | 'unsure' | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
   const show = (v: FieldValue) => formatValue(v, field.value_type);
   const decision = field.decision;
 
   function startEditing(mode: Editing['mode']) {
     setClientError(null);
-    setEditing({ mode, draft: draftFrom(mode === 'correct' ? field.agent.value : null, field.value_type), versionAtStart: field.agent.version });
+    // Both start from the AI's value: correcting edits it, overriding replaces it.
+    setEditing({ mode, draft: draftFrom(field.agent.value, field.value_type), versionAtStart: field.agent.version });
   }
 
   async function submit(action: DecisionAction, value?: FieldValue) {
@@ -41,9 +44,9 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
     }
   }
 
-  /** Accepting a value that contradicts its own source needs a second, deliberate step. */
   function accept() {
-    if (field.citation_check === 'mismatch') setConfirmingMismatch(true);
+    if (field.citation_check === 'mismatch') setConfirming('mismatch');
+    else if (field.agent.confidence < LOW_CONFIDENCE) setConfirming('unsure');
     else submit('accept');
   }
 
@@ -51,7 +54,7 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
     if (!editing) return;
     const result = validateValue(field.value_type, draftToInput(editing.draft, field.value_type));
     if (!result.ok) return setClientError(result.message);
-    if (editing.mode === 'correct' && sameValue(result.value, field.agent.value)) {
+    if (sameValue(result.value, field.agent.value)) {
       return setClientError("That's the AI's value unchanged. Use Accept instead.");
     }
     setClientError(null);
@@ -191,17 +194,17 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
         )}
       </div>
       <ConfirmDialog
-        open={confirmingMismatch}
-        onOpenChange={setConfirmingMismatch}
+        open={confirming === 'mismatch'}
+        onOpenChange={(open) => !open && setConfirming(null)}
         title="This doesn't match the source"
         safeLabel="Correct it instead"
         onSafe={() => {
-          setConfirmingMismatch(false);
+          setConfirming(null);
           startEditing('correct');
         }}
         riskyLabel="Accept the AI's value anyway"
         onRisky={() => {
-          setConfirmingMismatch(false);
+          setConfirming(null);
           submit('accept');
         }}
       >
@@ -210,6 +213,27 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
           <strong className="text-ink">“{field.cited_text}”</strong>.
         </p>
         <p>Accept the AI's value only if you've checked and the document is wrong.</p>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={confirming === 'unsure'}
+        onOpenChange={(open) => !open && setConfirming(null)}
+        title="The AI is unsure about this"
+        safeLabel="Go back and check"
+        onSafe={() => setConfirming(null)}
+        riskyLabel="I've checked it, accept"
+        onRisky={() => {
+          setConfirming(null);
+          submit('accept');
+        }}
+      >
+        <p>
+          The AI is only {Math.round(field.agent.confidence * 100)}% sure that <strong className="text-ink">{show(field.agent.value)}</strong> is right.
+        </p>
+        <p>
+          {field.cited_text === null
+            ? 'No document backs it: the AI worked it out itself. Check it by hand before accepting.'
+            : 'Check it against the document before accepting.'}
+        </p>
       </ConfirmDialog>
     </div>
   );

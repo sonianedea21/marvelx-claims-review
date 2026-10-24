@@ -4,9 +4,9 @@ import { api } from '../../api/claims';
 import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
 import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
-import { Banner, Button, Card, Disclosure, EmptyState, Heading, Skeleton, StepList, type StepItem } from '../../ui';
+import { Banner, Button, Card, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, type JumpItem, type StepItem } from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
-import { ClaimHeader } from './ClaimHeader';
+import { ClaimHeader, RunBar } from './ClaimHeader';
 import { DecisionPanel } from './DecisionPanel';
 import { FieldCard } from './FieldCard';
 import { DecidedRow } from './DecidedRow';
@@ -75,6 +75,21 @@ export function ReviewPage() {
     note: s.note,
   }));
 
+  const outdated = detail.fields.filter((f) => f.outdated);
+  const jumpItems: JumpItem[] = [
+    ...(lookFields.length > 0 ? [{ href: '#look', label: 'Needs a look', count: openCount, tone: 'attention' as const, icon: 'eye' as const }] : []),
+    ...(outdated.length > 0
+      ? [{ href: `#field-${outdated[0]!.field_id}`, label: 'AI changed after you decided', count: outdated.length, tone: 'attention' as const, icon: 'history' as const }]
+      : []),
+    ...(fineFields.length > 0 ? [{ href: '#fine', label: 'Looks fine, to accept', count: fineFields.filter(isOpen).length }] : []),
+  ];
+  const stepsTitle =
+    detail.run.phase === 'running'
+      ? `What the AI is doing · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'} so far`
+      : detail.run.phase === 'failed'
+        ? `What the AI did before it stopped · ${steps.length} steps`
+        : `What the AI did · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`;
+
   function open(fieldId: string) {
     setOpened((current) => new Set(current).add(fieldId));
     setSelection(fieldId);
@@ -112,6 +127,7 @@ export function ReviewPage() {
           field={field}
           changedJustNow={recentlyChanged.has(field.field_id)}
           selected={selected?.field_id === field.field_id}
+          sourceVisible={isDesktop && selected?.field_id === field.field_id}
           onShowSource={() => setSelection(field.field_id)}
           onCollapse={reviewerOpened ? () => close(field.field_id) : undefined}
         >
@@ -148,6 +164,13 @@ export function ReviewPage() {
   return (
     <main className="mx-auto max-w-content space-y-5 px-4 py-6 sm:py-8">
       <ClaimHeader detail={detail} />
+      {/* Stays in view: whether the AI is still working, and shortcuts to each part of the review. */}
+      {(detail.run.phase === 'running' || jumpItems.length > 1) && (
+        <div className="sticky top-0 z-30 -mx-4 space-y-2 border-b border-line bg-paper px-4 py-2 sm:mx-0 sm:px-0">
+          <RunBar detail={detail} />
+          {jumpItems.length > 1 && <JumpNav label="Jump to" items={jumpItems} />}
+        </div>
+      )}
       {connection === 'reconnecting' && (
         <p className="text-sm text-ink-subtle" role="status">Reconnecting… showing the last update.</p>
       )}
@@ -163,7 +186,7 @@ export function ReviewPage() {
       <Disclosure
         key={detail.run.phase}
         defaultOpen={detail.run.phase === 'running'}
-        summary={`What the AI did · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`}
+        summary={stepsTitle}
       >
         {steps.length > 0 ? <StepList steps={steps} /> : <p className="text-sm text-ink-muted">Nothing yet.</p>}
       </Disclosure>
@@ -185,7 +208,7 @@ export function ReviewPage() {
           )}
 
           {lookFields.length > 0 && (
-            <section className="space-y-3" aria-labelledby="look-title">
+            <section id="look" className="scroll-mt-32 space-y-3" aria-labelledby="look-title">
               <Heading level={2} id="look-title">
                 Needs a look · {openCount > 0 ? `${openCount} to decide` : 'all decided'}
               </Heading>
@@ -194,7 +217,7 @@ export function ReviewPage() {
           )}
 
           {fineFields.length > 0 && (
-            <section className="space-y-3" aria-labelledby="fine-title">
+            <section id="fine" className="scroll-mt-32 space-y-3" aria-labelledby="fine-title">
               <div className="space-y-1">
                 <Heading level={2} id="fine-title">Looks fine · {fineFields.length}</Heading>
                 <p className="text-sm text-ink-muted">

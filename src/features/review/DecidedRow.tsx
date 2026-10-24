@@ -11,10 +11,15 @@ export function DecidedRow({ field, locked, onChange, boxed = false }: Props) {
   const copy = DECISION_COPY[decision.action];
   return (
     <li className={cx('flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5', boxed && 'rounded-lg border border-line bg-surface px-4')}>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-ink-muted">{field.label}</p>
-        <p className="font-medium break-words">{formatValue(decision.value, field.value_type)}</p>
-      </div>
+      <button
+        type="button"
+        onClick={onChange}
+        disabled={locked}
+        className="-mx-2 min-w-0 flex-1 rounded-md px-2 py-1 text-left enabled:hover:bg-paper focus-visible:focus-ring"
+      >
+        <span className="block text-sm text-ink-muted">{field.label}</span>
+        <span className="block font-medium break-words">{formatValue(decision.value, field.value_type)}</span>
+      </button>
       <p className="flex items-center gap-1 text-sm font-medium text-human">
         <Icon name={copy.icon} size="sm" />
         {copy.done.replace(' this', '')}
