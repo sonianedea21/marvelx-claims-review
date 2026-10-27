@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { confidenceChanges } from '../../domain/confidence';
 import { formatValue } from '../../domain/format';
 import type { FieldState } from '../../domain/types';
 import { Badge, Button, Card, ConfidenceLabel, cx, Excerpt, Icon, ValueChange } from '../../ui';
@@ -32,6 +33,7 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, sourc
       !(r === 'revised_by_agent' && (changedJustNow || field.outdated)),
   );
   const previous = field.history.slice(0, -1);
+  const percent = (confidence: number) => `${Math.round(confidence * 100)}%`;
 
   return (
     <Card
@@ -81,6 +83,23 @@ export function FieldCard({ field, changedJustNow, onShowSource, selected, sourc
             reason={field.history[i + 1]!.reason}
           />
         ))}
+
+        {/* Why a field the AI is now sure about still needs a look: it wasn't always. */}
+        {confidenceChanges(field).map((change, i) => (
+          <ValueChange
+            key={`confidence-${i}`}
+            byline="AI changed how sure it is"
+            from={percent(change.from)}
+            to={percent(change.to)}
+            reason={change.reason}
+          />
+        ))}
+
+        {field.changed_inputs.length > 0 && (
+          <p className="text-sm text-ink">
+            The AI worked this out from {field.changed_inputs.join(' and ')}, which you changed. It may no longer add up.
+          </p>
+        )}
 
         {field.cited_text !== null ? (
           <div className="space-y-1.5">

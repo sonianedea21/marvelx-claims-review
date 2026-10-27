@@ -15,7 +15,8 @@ function totalField(untilMs: number, decisions: ReviewerDecision[] = []): FieldS
 
 const acceptedV1: ReviewerDecision = {
   id: 'dec_1', claim_id: 'CLM-2026-004817', field_id: 'total_incl_vat', action: 'accept',
-  value: { amount: '3605.80', currency: 'EUR' }, agent_version: 1, agent_confidence: 0.88,
+  value: { amount: '3605.80', currency: 'EUR' }, agent_run: 1, agent_version: 1,
+  agent_value: { amount: '3605.80', currency: 'EUR' }, agent_confidence: 0.88,
   at: '2026-10-24T10:00:00Z', reviewer: 'reviewer',
 };
 
@@ -35,7 +36,7 @@ describe('DecisionPanel', () => {
   it('"Keep mine" overrides the new AI value with the reviewer\'s, against the new version', () => {
     const { decide } = renderPanel(totalField(Infinity, [acceptedV1]));
     fireEvent.click(screen.getByRole('button', { name: 'Keep mine (€3,605.80)' }));
-    expect(decide).toHaveBeenCalledWith('override', 2, { amount: '3605.80', currency: 'EUR' });
+    expect(decide).toHaveBeenCalledWith('override', expect.objectContaining({ run: 1, version: 2 }), { amount: '3605.80', currency: 'EUR' });
   });
 
   it('keeps the editor open with the reviewer\'s draft when the AI revises mid-edit', () => {
@@ -49,7 +50,7 @@ describe('DecisionPanel', () => {
     expect(screen.getByText('The AI changed this while you were editing')).toBeTruthy();
     expect((screen.getByLabelText(/amount in EUR/) as HTMLInputElement).value).toBe('3700.00');
     fireEvent.click(screen.getByRole('button', { name: 'Save my value anyway' }));
-    expect(decide).toHaveBeenCalledWith('correct', 2, { amount: '3700.00', currency: 'EUR' });
+    expect(decide).toHaveBeenCalledWith('correct', expect.objectContaining({ run: 1, version: 2 }), { amount: '3700.00', currency: 'EUR' });
   });
 
   it('validates by value type before sending anything', () => {

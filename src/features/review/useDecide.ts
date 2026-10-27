@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../../api/claims';
 import type { ApiError } from '../../api/client';
-import type { DecisionAction, FieldValue } from '../../domain/types';
+import type { AgentRef, DecisionAction, FieldValue } from '../../domain/types';
 
 type Pending = Record<string, boolean>;
 type Errors = Record<string, ApiError | undefined>;
@@ -14,11 +14,12 @@ export function useDecide(claimId: string) {
   const [pending, setPending] = useState<Pending>({});
   const [errors, setErrors] = useState<Errors>({});
 
-  async function decide(fieldId: string, action: DecisionAction, agentVersion: number, value?: FieldValue) {
+  /** `seen` is the AI run and version the reviewer was looking at when they decided. */
+  async function decide(fieldId: string, action: DecisionAction, seen: AgentRef, value?: FieldValue) {
     setPending((p) => ({ ...p, [fieldId]: true }));
     setErrors((e) => ({ ...e, [fieldId]: undefined }));
     try {
-      await api.decide(claimId, { field_id: fieldId, action, agent_version: agentVersion, value });
+      await api.decide(claimId, { field_id: fieldId, action, agent_run: seen.run, agent_version: seen.version, value });
       return true;
     } catch (error) {
       setErrors((e) => ({ ...e, [fieldId]: error as ApiError }));

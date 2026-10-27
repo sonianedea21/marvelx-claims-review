@@ -10,7 +10,7 @@ const docs = (id: string) => (docId: string) => fixture(id).documents.find((d) =
 function decision(overrides: Partial<ReviewerDecision>): ReviewerDecision {
   return {
     id: 'dec_1', claim_id: 'CLM-2026-004817', field_id: 'total_incl_vat', action: 'accept',
-    value: null, agent_version: 1, agent_confidence: 0.88, at: '2026-10-24T10:00:00Z', reviewer: 'reviewer',
+    value: null, agent_run: 1, agent_version: 1, agent_value: null, agent_confidence: 0.88, at: '2026-10-24T10:00:00Z', reviewer: 'reviewer',
     ...overrides,
   };
 }

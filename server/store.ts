@@ -86,9 +86,10 @@ export class ClaimStore {
     this.touch(id);
   }
 
-  /** Clears the run so it can be delivered again. Decisions are kept. */
+  /** Starts a new, empty run so it can be delivered again. Decisions are kept. */
   resetRun(id: string) {
-    this.mustGet(id).run = emptyRunState();
+    const record = this.mustGet(id);
+    record.run = emptyRunState(record.run.run + 1);
     this.touch(id);
   }
 

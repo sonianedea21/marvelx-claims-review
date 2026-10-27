@@ -1,7 +1,9 @@
 import type { AgentField, RunEvent, RunState } from './types';
 
-export function emptyRunState(): RunState {
+/** `run` counts runs of the AI on one claim: 1 the first time, +1 for each "Run the AI again". */
+export function emptyRunState(run = 1): RunState {
   return {
+    run,
     phase: 'not_started',
     started_at: null,
     seen_seqs: [],
@@ -82,7 +84,7 @@ function applyTo(state: RunState, event: RunEvent) {
         field_id,
         label,
         value_type,
-        versions: [{ version: 1, seq: event.seq, value, confidence, source, reason: null }],
+        versions: [{ run: state.run, version: 1, seq: event.seq, value, confidence, source, reason: null }],
         confidence,
         confidence_notes: [],
       };
@@ -97,7 +99,7 @@ function applyTo(state: RunState, event: RunEvent) {
         state.held_events.push(event);
         return;
       }
-      reviseField(field, event);
+      reviseField(field, event, state.run);
       return;
     }
 
@@ -128,9 +130,9 @@ function applyTo(state: RunState, event: RunEvent) {
   }
 }
 
-function reviseField(field: AgentField, event: Extract<RunEvent, { type: 'field_revised' }>) {
+function reviseField(field: AgentField, event: Extract<RunEvent, { type: 'field_revised' }>, run: number) {
   const { value, confidence, source, reason } = event.payload;
-  field.versions.push({ version: field.versions.length + 1, seq: event.seq, value, confidence, source, reason });
+  field.versions.push({ run, version: field.versions.length + 1, seq: event.seq, value, confidence, source, reason });
   field.confidence = confidence;
 }
 

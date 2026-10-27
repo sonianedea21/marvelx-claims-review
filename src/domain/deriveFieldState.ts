@@ -1,6 +1,7 @@
 import { checkCitation } from './checkCitation';
 import { LOW_CONFIDENCE } from './confidence';
-import type { AgentField, AttentionReason, FieldState, FieldStatus, ReviewerDecision } from './types';
+import type { AgentField, AgentVersion, AttentionReason, FieldState, FieldStatus, ReviewerDecision } from './types';
+import { sameValue } from './validateValue';
 
 const STATUS_BY_ACTION: Record<ReviewerDecision['action'], FieldStatus> = {
   accept: 'accepted',
@@ -22,7 +23,7 @@ export function deriveFieldState(
   const citedText = agent.source ? sliceCitation(documentText(agent.source.document_id), agent.source) : null;
   const citationCheck = checkCitation(agent.value, field.value_type, citedText);
 
-  const outdated = decision !== null && decision.agent_version < agent.version;
+  const outdated = decision !== null && isOutdated(decision, agent);
   const confidenceChangedSinceDecision =
     decision !== null && !outdated && decision.agent_confidence !== agent.confidence;
 
@@ -47,9 +48,22 @@ export function deriveFieldState(
     status: decision ? STATUS_BY_ACTION[decision.action] : 'pending',
     outdated,
     confidence_changed_since_decision: confidenceChangedSinceDecision,
+    // Filled in by withDerivedInputs, which can see the other fields.
+    changed_inputs: [],
+    inputs_changed_since_decision: false,
     attention,
     final_value: decision ? decision.value : undefined,
   };
+}
+
+/**
+ * Has the AI's value moved on since the reviewer decided? Within one run, versions
+ * count up, so a newer version means it changed. "Run the AI again" starts counting
+ * from 1, so across runs the value the reviewer saw is compared with the current one.
+ */
+function isOutdated(decision: ReviewerDecision, agent: AgentVersion): boolean {
+  if (decision.agent_run === agent.run) return decision.agent_version < agent.version;
+  return !sameValue(decision.agent_value, agent.value);
 }
 
 /** Offsets are UTF-16 code units, which is exactly what String.prototype.slice uses. */

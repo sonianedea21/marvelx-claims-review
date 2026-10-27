@@ -26,6 +26,7 @@ export function reviewBlockers(
   if (run.phase !== 'finished') blockers.push('run_not_finished');
   if (fields.length === 0 || fields.some((f) => f.status === 'pending')) blockers.push('fields_undecided');
   if (fields.some((f) => f.outdated)) blockers.push('decisions_outdated');
+  if (fields.some((f) => f.inputs_changed_since_decision)) blockers.push('derived_inputs_changed');
   if (suspicious.length > 0 && !review.warning_acknowledged_at) blockers.push('warning_not_acknowledged');
   return blockers;
 }

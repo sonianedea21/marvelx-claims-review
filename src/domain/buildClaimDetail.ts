@@ -1,6 +1,8 @@
 import { summaryText } from './applyEvent';
 import { deriveClaimStatus, reviewBlockers } from './deriveClaimStatus';
 import { deriveFieldState, latestDecisions } from './deriveFieldState';
+import { withDerivedInputs } from './derivedFields';
+import { missingChecks } from './missingChecks';
 import { isOpen, needsALook } from './needsALook';
 import { detectSuspiciousInstructions } from './suspiciousInstructions';
 import type {
@@ -22,8 +24,8 @@ export function buildClaimDetail(record: ClaimRecord): ClaimDetail {
   const textById = new Map(record.documents.map((d) => [d.document_id, d.text]));
   const decisions = latestDecisions(record.decisions);
 
-  const fields = run.field_order.map((id) =>
-    deriveFieldState(run.fields[id]!, decisions.get(id) ?? null, (docId) => textById.get(docId)),
+  const fields = withDerivedInputs(
+    run.field_order.map((id) => deriveFieldState(run.fields[id]!, decisions.get(id) ?? null, (docId) => textById.get(docId))),
   );
   const summary = summaryText(run);
   const suspicious = detectSuspiciousInstructions(record.documents, summary);
@@ -44,6 +46,7 @@ export function buildClaimDetail(record: ClaimRecord): ClaimDetail {
     needs_attention: fields.filter((f) => needsALook(f) && isOpen(f)).length,
     open_conflicts: fields.filter((f) => f.outdated).length,
     suspicious_instructions: suspicious.length > 0,
+    missing_checks: missingChecks(run),
     run_error: run.error,
   };
 

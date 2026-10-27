@@ -10,6 +10,7 @@ export const ATTENTION_COPY: Record<AttentionReason, { label: string; icon: Icon
   revised_by_agent: { label: 'AI changed this', icon: 'history', tone: 'attention' },
   no_citation: { label: 'No source: the AI worked this out itself', icon: 'link_off', tone: 'attention' },
   no_value: { label: 'AI found nothing', icon: 'search_off', tone: 'attention' },
+  inputs_changed: { label: 'You changed what this is worked out from', icon: 'pencil', tone: 'attention' },
 };
 
 export const DECISION_COPY: Record<DecisionAction, { done: string; icon: IconName }> = {
@@ -18,7 +19,11 @@ export const DECISION_COPY: Record<DecisionAction, { done: string; icon: IconNam
   override: { done: 'You overrode this', icon: 'swap' },
 };
 
-export function blockerCopy(blocker: ReviewBlocker, counts: { undecided: number; outdated: number }, failed: boolean) {
+export function blockerCopy(
+  blocker: ReviewBlocker,
+  counts: { undecided: number; outdated: number; derived: number },
+  failed: boolean,
+) {
   switch (blocker) {
     case 'run_not_finished':
       return failed ? 'The AI run stopped part-way, so this review cannot be completed yet' : 'Wait for the AI to finish';
@@ -26,6 +31,8 @@ export function blockerCopy(blocker: ReviewBlocker, counts: { undecided: number;
       return counts.undecided > 0 ? `Decide the remaining ${counts.undecided} ${counts.undecided === 1 ? 'field' : 'fields'}` : null;
     case 'decisions_outdated':
       return `Re-check ${counts.outdated} ${counts.outdated === 1 ? 'field' : 'fields'} the AI changed after you decided`;
+    case 'derived_inputs_changed':
+      return `Re-check ${counts.derived} worked-out ${counts.derived === 1 ? 'value' : 'values'}: you changed what ${counts.derived === 1 ? 'it is' : 'they are'} based on`;
     case 'warning_not_acknowledged':
       return 'Read the suspicious-instruction warning';
   }

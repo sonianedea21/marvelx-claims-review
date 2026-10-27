@@ -46,7 +46,9 @@ describe('ReplayClock', () => {
 
   it('clears decisions when restarted', () => {
     const { store, clock } = start(0, Number.MAX_SAFE_INTEGER);
-    store.addDecision('clm_4830', { field_id: 'locked', action: 'accept', value: true, agent_version: 1, agent_confidence: 0.94 });
+    store.addDecision('clm_4830', {
+      field_id: 'locked', action: 'accept', value: true, agent_run: 1, agent_version: 1, agent_value: true, agent_confidence: 0.94,
+    });
     clock.restart();
     expect(store.detail('clm_4830')!.claim.progress.decided).toBe(0);
   });

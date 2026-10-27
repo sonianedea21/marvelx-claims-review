@@ -62,6 +62,11 @@ export function QueueRow({ claim }: { claim: QueueItem }) {
             Suspicious instruction
           </Badge>
         )}
+        {claim.missing_checks.map((check) => (
+          <Badge key={check.step_id} tone="attention" icon="search_off">
+            {`Didn't check ${check.what}`}
+          </Badge>
+        ))}
       </div>
 
       <div className="space-y-1.5 sm:col-span-3">

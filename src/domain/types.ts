@@ -75,6 +75,8 @@ export type Step = { step_id: string; label: string; status: StepStatus; note: s
 
 /** One value the agent put forward. Version 1 is the extraction; each field_revised adds one. */
 export type AgentVersion = {
+  /** Which run of the AI produced it. "Run the AI again" starts a new run, and versions restart at 1. */
+  run: number;
   version: number;
   seq: number;
   value: FieldValue;
@@ -96,6 +98,8 @@ export type AgentField = {
 export type RunError = { step_id: string; code: string; message: string; retryable: boolean };
 
 export type RunState = {
+  /** 1 for the first run of a claim, +1 each time the AI runs again. */
+  run: number;
   phase: 'not_started' | 'running' | 'finished' | 'failed';
   started_at: string | null;
   /** Seqs already applied. An array, not a Set, so the state stays plain JSON. */
@@ -114,6 +118,9 @@ export type RunState = {
 // ---- Reviewer side ----
 
 export type DecisionAction = 'accept' | 'correct' | 'override';
+
+/** Which agent value a reviewer saw: the run and the version within it. */
+export type AgentRef = Pick<AgentVersion, 'run' | 'version'>;
 export const DECISION_ACTIONS: readonly DecisionAction[] = ['accept', 'correct', 'override'];
 
 export type ReviewerDecision = {
@@ -123,8 +130,11 @@ export type ReviewerDecision = {
   action: DecisionAction;
   /** accept: the agent value the reviewer was shown. correct / override: the reviewer's value. */
   value: FieldValue;
-  /** The agent version the reviewer saw. A newer agent version makes this decision outdated. */
+  /** The agent run and version the reviewer saw. A newer agent version makes this decision outdated. */
+  agent_run: number;
   agent_version: number;
+  /** The agent value the reviewer saw. After the AI runs again, versions restart, so the value is compared instead. */
+  agent_value: FieldValue;
   /** The agent confidence the reviewer saw, so a later confidence-only change can be noted. */
   agent_confidence: number;
   at: string;
@@ -141,7 +151,8 @@ export type AttentionReason =
   | 'revised_by_agent'
   | 'no_citation'
   | 'no_value'
-  | 'decision_outdated';
+  | 'decision_outdated'
+  | 'inputs_changed';
 
 export type FieldStatus = 'pending' | 'accepted' | 'corrected' | 'overridden';
 
@@ -162,6 +173,10 @@ export type FieldState = {
   outdated: boolean;
   /** The agent changed only its confidence after the reviewer decided. Informational. */
   confidence_changed_since_decision: boolean;
+  /** For a value the AI worked out from other fields: labels of the inputs the reviewer corrected or overrode. */
+  changed_inputs: string[];
+  /** The reviewer decided this derived value, then changed one of its inputs. */
+  inputs_changed_since_decision: boolean;
   attention: AttentionReason[];
   /** The reviewer's value once decided; undefined until then. */
   final_value: FieldValue | undefined;
@@ -171,7 +186,15 @@ export type CitationCheck = 'match' | 'mismatch' | 'not_checked';
 
 export type SuspiciousInstruction = { where: 'document' | 'summary'; document_id: string | null; excerpt: string };
 
-export type ReviewBlocker = 'run_not_finished' | 'fields_undecided' | 'decisions_outdated' | 'warning_not_acknowledged';
+export type ReviewBlocker =
+  | 'run_not_finished'
+  | 'fields_undecided'
+  | 'decisions_outdated'
+  | 'derived_inputs_changed'
+  | 'warning_not_acknowledged';
+
+/** A step the AI should have run but didn't, though the run finished. `what` is what went unchecked, in plain words. */
+export type MissingCheck = { step_id: string; what: string };
 
 export type QueueItem = {
   id: string;
@@ -188,6 +211,8 @@ export type QueueItem = {
   needs_attention: number;
   open_conflicts: number;
   suspicious_instructions: boolean;
+  /** Required checks a finished run skipped (004830 never looks up the policy). */
+  missing_checks: MissingCheck[];
   /** Set when the run failed: what the AI reported, and whether running it again can help. */
   run_error: RunError | null;
 };
