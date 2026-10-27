@@ -11,7 +11,7 @@ Chosen on 2026-10-24 after three throwaway explorations of the review screen, al
 ## Chosen: triage backbone with evidence on demand
 
 **Order on screen, top to bottom:**
-1. **Claim header + sticky "AI is still working · <step>" bar.** Always visible until the run finishes or fails.
+1. **Claim header + "AI is still working · <step>" bar.** Visible until the run finishes or fails: once the bar scrolls away, a one-line copy appears in the sticky row (`useInView`), so it is never on screen twice.
 2. **Suspicious-instruction banner** (when flagged). It quotes the source text and must be acknowledged before the review can be completed.
 3. **AI summary, open at the top.** Sonia's call: the summary is the fastest way to understand a claim, so it stays visible rather than collapsed. Sentences that repeat a flagged instruction are marked inside it.
 4. **Progress:** "x of n fields decided · y need your attention".
@@ -28,7 +28,7 @@ Chosen on 2026-10-24 after three throwaway explorations of the review screen, al
 - **The AI is there to make the job easier.** The screen must say clearly how far to trust each value and let the reviewer act fast *and* be sure of what they accepted. Every accept happens with the value and its source in view.
 - **What needs me comes first.** The ordering is driven by attention reasons, not by document order or by the agent's timeline.
 - **Confidence the reviewer can act on.** Plain-word bands instead of raw scores, with the percentage as secondary text. A value that doesn't match its own citation overrides the confidence wording: a "Likely right 91%" label next to "Doesn't match the source" was the clearest failure in exploration 2.
-- **Nothing moves silently.** A field only moves into "Needs your attention" with a visible "AI changed this just now" marker. Content never jumps under someone who is editing.
+- **Nothing moves silently.** A field only moves into "Needs your attention" with a visible "AI changed this just now" marker, and never moves out: when the AI grows surer, the field stays and shows the confidence change with the AI's reason. A field the reviewer has opened stays where it is. Content never jumps under someone who is editing.
 
 ## Not now
 - Keyboard shortcuts (A / C / O, J / K): listed under "What next" in the README.

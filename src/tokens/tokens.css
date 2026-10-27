@@ -73,7 +73,7 @@
   --radius-sm: 0.375rem;           /* 6: tags, small chips */
   --radius-md: 0.625rem;           /* 10: inputs */
   --radius-lg: 0.875rem;           /* 14: cards, panels, sheets */
-  --radius-full: 9999px;           /* buttons, badges (pill, like marvelx.ai) */
+  --radius-full: 9999px;           /* buttons and choice pills (like marvelx.ai); badges are rounded-sm */
 
   --shadow-*: initial;
   --shadow-sm: 0 1px 2px #0d123c0f;
