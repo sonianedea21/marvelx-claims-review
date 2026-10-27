@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && node scripts/lint-edited-file.mjs",
+            "timeout": 60,
+            "statusMessage": "Linting the edited file"
+          }
+        ]
+      }
+    ]
+  }
+}

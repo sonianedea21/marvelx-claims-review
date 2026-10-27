@@ -66,7 +66,7 @@ describe('POST /api/claims/:id/decisions', () => {
     const app = finishedApp();
     const res = await request(app)
       .post('/api/claims/clm_4830/decisions')
-      .send({ field_id: 'frame_number', action: 'accept', agent_version: 1 });
+      .send({ field_id: 'frame_number', action: 'accept', agent_run: 1, agent_version: 1 });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ field_id: 'frame_number', action: 'accept', value: 'GZ4H218873', agent_version: 1 });
 
@@ -77,7 +77,7 @@ describe('POST /api/claims/:id/decisions', () => {
   it('returns 409 when the agent changed the value since the reviewer saw it', async () => {
     const res = await request(finishedApp())
       .post('/api/claims/clm_4817/decisions')
-      .send({ field_id: 'total_incl_vat', action: 'accept', agent_version: 1 });
+      .send({ field_id: 'total_incl_vat', action: 'accept', agent_run: 1, agent_version: 1 });
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('agent_value_changed');
     expect(res.body.field.agent.version).toBe(2);
@@ -86,9 +86,35 @@ describe('POST /api/claims/:id/decisions', () => {
   it('returns 422 for a value that does not fit the field type', async () => {
     const res = await request(finishedApp())
       .post('/api/claims/clm_4817/decisions')
-      .send({ field_id: 'incident_date', action: 'correct', value: '13/09/2026', agent_version: 1 });
+      .send({ field_id: 'incident_date', action: 'correct', value: '13/09/2026', agent_run: 1, agent_version: 1 });
     expect(res.status).toBe(422);
     expect(res.body.message).toBe('Enter a real date as YYYY-MM-DD.');
+  });
+});
+
+describe('error responses', () => {
+  it('answers a malformed JSON body with a 400 in the usual JSON shape, not an HTML page', async () => {
+    const res = await request(finishedApp())
+      .post('/api/claims/clm_4817/decisions')
+      .set('Content-Type', 'application/json')
+      .send('{bad');
+    expect(res.status).toBe(400);
+    expect(res.headers['content-type']).toMatch(/json/);
+    expect(res.body.error).toBe('invalid_json');
+  });
+
+  it('answers an unknown API route with a JSON 404', async () => {
+    const res = await request(finishedApp()).get('/api/nope');
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('not_found');
+  });
+
+  it('rejects an override that keeps the AI value with 422', async () => {
+    const res = await request(finishedApp())
+      .post('/api/claims/clm_4809/decisions')
+      .send({ field_id: 'plate', action: 'override', value: 'R-562-TN', agent_run: 1, agent_version: 1 });
+    expect(res.status).toBe(422);
+    expect(res.body.error).toBe('unchanged_value');
   });
 });
 
@@ -105,7 +131,7 @@ describe('completing a review', () => {
     for (const field of claim.body.fields) {
       await request(app)
         .post('/api/claims/clm_4809/decisions')
-        .send({ field_id: field.field_id, action: 'accept', agent_version: field.agent.version });
+        .send({ field_id: field.field_id, action: 'accept', agent_run: field.agent.run, agent_version: field.agent.version });
     }
     const res = await request(app).post('/api/claims/clm_4809/complete');
     expect(res.status).toBe(200);
@@ -139,7 +165,7 @@ describe('reopening and re-running', () => {
     const app = finishedApp();
     const claim = await request(app).get('/api/claims/clm_4809');
     for (const field of claim.body.fields) {
-      await request(app).post('/api/claims/clm_4809/decisions').send({ field_id: field.field_id, action: 'accept', agent_version: 1 });
+      await request(app).post('/api/claims/clm_4809/decisions').send({ field_id: field.field_id, action: 'accept', agent_run: 1, agent_version: 1 });
     }
     await request(app).post('/api/claims/clm_4809/complete');
     const res = await request(app).post('/api/claims/clm_4809/reopen');

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { FieldState } from '../../domain/types';
+import type { AgentRef, FieldState } from '../../domain/types';
 
 /**
  * Field ids whose AI value changed while this screen was open. The marker stays
@@ -7,13 +7,13 @@ import type { FieldState } from '../../domain/types';
  * (which reduced motion turns off) or on catching a brief flash.
  */
 export function useRecentlyChanged(fields: FieldState[] | undefined): Set<string> {
-  const versions = useRef<Map<string, number> | null>(null);
+  const versions = useRef<Map<string, AgentRef> | null>(null);
   const [changed, setChanged] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!fields) return;
     const previous = versions.current;
-    const next = new Map(fields.map((f) => [f.field_id, f.agent.version]));
+    const next = new Map(fields.map((f) => [f.field_id, f.agent]));
     versions.current = next;
     if (!previous) return; // first snapshot: nothing "changed", it was already like this
 
@@ -21,9 +21,12 @@ export function useRecentlyChanged(fields: FieldState[] | undefined): Set<string
       const updated = new Set(current);
       for (const field of fields) {
         const before = previous.get(field.field_id);
-        if (before !== undefined && field.agent.version > before) updated.add(field.field_id);
+        if (before && before.run === field.agent.run && field.agent.version > before.version) updated.add(field.field_id);
         // A decision made against the current version settles it.
-        if (field.decision?.agent_version === field.agent.version) updated.delete(field.field_id);
+        const { decision } = field;
+        if (decision && decision.agent_run === field.agent.run && decision.agent_version === field.agent.version) {
+          updated.delete(field.field_id);
+        }
       }
       return updated;
     });

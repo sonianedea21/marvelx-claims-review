@@ -217,3 +217,27 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 - **"AI still working" label** in the sticky row removed, at Sonia's request (the run bar above already says it).
 - **README time:** set to about 4.5 hours, the extra half hour attributed to the adversarial reviews, as Sonia stated.
 - **Phone "Complete review":** at Sonia's request, once a review can be completed on a phone, the button appears in a bar fixed to the bottom of the screen. The back-to-top button moves up above it.
+
+## 2026-10-26 · Mock committee review and fixes
+
+### Committee-style review: Sonia chose what to fix
+- **Proposed:** at Sonia's request, the agent reviewed the submission as a mock hiring committee and reported 17 findings, after running the checks, the replay and the app in a browser.
+- **Sonia chose to fix:** 1 (an edit lost when the AI's confidence rose), 2 (the "AI still working" signal disappeared when scrolled), 3 (004830 finishes without a policy check), 4 (stale derived value), 6 (the evidence view didn't show the value being checked), 8 (decisions not tied to a run), 9 (server allowed an override equal to the AI value), 10 (non-JSON errors), 14 (docs drifting from code) and 15 (enforcement by tools).
+- **Left as is:** the rest, including the "Looks fine" copy, phone density and the README's section 6.
+
+### Decisions Sonia made: all accepted as recommended
+- **Lost edit (1):** a field that ever needed a look stays in "Needs a look"; the card shows the AI's confidence change with its reason; a field the reviewer opened never moves.
+- **Run signal (2):** a one-line copy of the run bar appears in the sticky row only once the top bar has scrolled away, so it is never on screen twice (her sixth-pass request still holds).
+- **Missing check (3):** warn on the review screen and the queue, and add a bulk-accept blocker; completing the review stays allowed. Sonia asked whether bulk accept had been built. Answer: no, only its rules (`bulkAcceptBlockers`) and their tests, so the ticket can't miss them.
+- **Tooling (15):** all three: React hooks lint (new dev dependency, approved), a lint-on-edit agent hook, and a CI workflow. Sonia asked whether CI is needed yet, having no CI experience; the workflow is kept to the three commands she already runs.
+
+### Implementation choices the agent made (not separately reviewed)
+- **Derived value (4):** flagged, not recalculated (working out a payout isn't this screen's job). If it was decided before the input changed, it reopens with "Still right" and blocks completion until re-checked.
+- **Run identity (8):** every AI version records its run; decisions record `agent_run` and `agent_value`. Within a run, versions decide; across runs, values are compared, so a re-run that says the same thing keeps the reviewer's decisions.
+- **Errors (10):** unknown API routes also return a JSON 404.
+- **Evidence view (6):** the AI's value and trust label sit in the header of the phone sheet and the desktop panel, so they stay in view while scrolling the document.
+- **Hooks lint:** only `rules-of-hooks` and `exhaustive-deps`, not the plugin's full React Compiler set. The one existing finding (`useLiveData` leaving out `load`) is deliberate and now silenced with a comment saying why.
+
+### Agent mistakes caught while fixing
+- **A test that tested nothing:** the first page-level test for the lost edit passed without the page re-rendering, because it re-rendered the same element object. Fixed, then proven by putting the old rule back and watching the test fail.
+- **Fixture-specific copy in a generic rule:** the first missing-check banner named "the policy cover" though the rule is a list of steps; the failure banner had the same problem ("such as the policy cover"). Both made generic.

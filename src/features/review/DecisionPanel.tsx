@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ApiError } from '../../api/client';
 import { formatValue } from '../../domain/format';
-import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
+import type { AgentRef, DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import { sameValue, validateValue } from '../../domain/validateValue';
 import { Banner, Button, ConfirmDialog, DecisionStamp, FormField } from '../../ui';
 import { LOW_CONFIDENCE } from '../../domain/confidence';
@@ -13,17 +13,20 @@ type Props = {
   locked: boolean;
   saving: boolean;
   serverError: ApiError | undefined;
-  decide: (action: DecisionAction, agentVersion: number, value?: FieldValue) => Promise<boolean>;
+  /** `seen` is the AI run and version on screen when the reviewer decided. */
+  decide: (action: DecisionAction, seen: AgentRef, value?: FieldValue) => Promise<boolean>;
   /** Open straight into the actions (the reviewer reopened a decided field). */
   startRevisiting?: boolean;
   /** Called when the reviewer keeps their existing decision, so the card can fold back. */
   onKeep?: () => void;
+  /** Called when the reviewer starts correcting or overriding, e.g. to show this field's source. */
+  onEdit?: () => void;
 };
 
-type Editing = { mode: 'correct' | 'override'; draft: Draft; versionAtStart: number };
+type Editing = { mode: 'correct' | 'override'; draft: Draft; seenAtStart: AgentRef };
 
 /** Accept / correct / override for one field, the editor, and what to do when the AI changes things. */
-export function DecisionPanel({ field, locked, saving, serverError, decide, startRevisiting = false, onKeep }: Props) {
+export function DecisionPanel({ field, locked, saving, serverError, decide, startRevisiting = false, onKeep, onEdit }: Props) {
   const [editing, setEditing] = useState<Editing | null>(null);
   const [revisiting, setRevisiting] = useState(startRevisiting);
   // Accepting a value that contradicts its source, or that the AI is unsure about, takes a second step.
@@ -35,11 +38,16 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
   function startEditing(mode: Editing['mode']) {
     setClientError(null);
     // Both start from the AI's value: correcting edits it, overriding replaces it.
-    setEditing({ mode, draft: draftFrom(field.agent.value, field.value_type), versionAtStart: field.agent.version });
+    setEditing({
+      mode,
+      draft: draftFrom(field.agent.value, field.value_type),
+      seenAtStart: { run: field.agent.run, version: field.agent.version },
+    });
+    onEdit?.();
   }
 
   async function submit(action: DecisionAction, value?: FieldValue) {
-    const ok = await decide(action, field.agent.version, value);
+    const ok = await decide(action, field.agent, value);
     if (ok) {
       setEditing(null);
       setRevisiting(false);
@@ -97,6 +105,8 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
 
   // ---- Decided ----
   if (decision && !revisiting) {
+    // A value worked out from fields the reviewer changed after deciding it (see FieldCard for which).
+    const recheck = field.inputs_changed_since_decision;
     return (
       <DecisionStamp
         title={DECISION_COPY[decision.action].done}
@@ -111,7 +121,25 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
             )}
           </>
         }
-        actions={!locked && <Button size="sm" variant="ghost" onClick={() => setRevisiting(true)}>Change decision</Button>}
+        actions={
+          !locked && (
+            <>
+              {recheck && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  loading={saving}
+                  onClick={() => submit(decision.action, decision.action === 'accept' ? undefined : decision.value)}
+                >
+                  Still right
+                </Button>
+              )}
+              <Button size="sm" variant="ghost" onClick={() => setRevisiting(true)}>
+                Change decision
+              </Button>
+            </>
+          )
+        }
       />
     );
   }
@@ -122,7 +150,8 @@ export function DecisionPanel({ field, locked, saving, serverError, decide, star
   if (editing) {
     const inputId = `edit-${field.field_id}`;
     const error = clientError ?? (serverError && serverError.status !== 409 ? serverError.message : null);
-    const changedWhileEditing = field.agent.version !== editing.versionAtStart;
+    const changedWhileEditing =
+      field.agent.run !== editing.seenAtStart.run || field.agent.version !== editing.seenAtStart.version;
     return (
       <form
         className="space-y-3 rounded-md border border-line bg-paper p-3"

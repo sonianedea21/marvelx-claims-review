@@ -10,13 +10,14 @@ type Props = {
   onRetry: () => void;
 };
 
-/** The two things that must be seen before anything else: suspicious instructions and a failed run. */
+/** What must be seen before anything else: suspicious instructions, a failed run, and checks a finished run skipped. */
 export function RunBanners({ detail, acknowledging, onAcknowledge, retrying, onRetry }: Props) {
   const fromDocuments = detail.suspicious_instructions.filter((s) => s.where === 'document');
   const inSummary = detail.suspicious_instructions.some((s) => s.where === 'summary');
   const acknowledged = detail.review.warning_acknowledged_at !== null;
   const titles = Object.fromEntries(detail.documents.map((d) => [d.document_id, d.title]));
   const error = detail.run.error;
+  const missing = detail.claim.missing_checks;
 
   return (
     <>
@@ -77,8 +78,17 @@ export function RunBanners({ detail, acknowledging, onAcknowledge, retrying, onR
           </p>
           <p>
             You can still check the {detail.fields.length} {detail.fields.length === 1 ? 'field' : 'fields'} it found, but the
-            review can't be completed until a full run finishes. Anything it didn't get to, such as the policy cover, hasn't
-            been checked at all.
+            review can't be completed until a full run finishes. Anything it didn't get to hasn't been checked at all.
+          </p>
+        </Banner>
+      )}
+
+      {missing.length > 0 && (
+        // "Finished" isn't "complete": 004830 finishes without ever looking up the policy.
+        <Banner tone="attention" icon="search_off" title={`The AI finished without checking ${missing.map((m) => m.what).join(' or ')}`}>
+          <p className="text-ink">
+            The fields below can all look fine and still not be the whole picture. Check{' '}
+            {missing.map((m) => m.what).join(' and ')} yourself before relying on this review.
           </p>
         </Banner>
       )}

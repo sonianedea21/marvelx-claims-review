@@ -12,7 +12,7 @@ All tokens live in [`tokens.css`](tokens.css) as a Tailwind v4 `@theme` block. T
 | Semantic | `attention`, `danger`, `success`, `info` (+ `-tint`) | Needs a look (eye icon) / wrong, failed or suspicious (x-circle or shield) / system states only, e.g. run finished / neutral information, deliberately not blue |
 | Type | `font-sans`, `font-serif`, `font-mono`; `text-xs` 12, `sm` 14, `base` 16, `lg` 20, `xl` 28 | Serif only for page and section titles |
 | Space | Tailwind's 4px scale; `max-w-content`, `max-w-reading` | Spacing in multiples of 4px |
-| Shape | `rounded-sm` 6, `md` 10, `lg` 14, `full`; `shadow-sm/md/lg` | Pills for buttons and badges, `lg` for cards |
+| Shape | `rounded-sm` 6, `md` 10, `lg` 14, `full`; `shadow-sm/md/lg` | Pills for buttons and choice pills; badges are square tags (`rounded-sm`) so status never looks pressable; `lg` for cards |
 | Motion | `ease-standard`, `animate-pulse-dot`, `animate-flash` | All motion is switched off under `prefers-reduced-motion` |
 
 **Layers (z-index), bottom to top:**

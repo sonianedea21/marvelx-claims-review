@@ -25,7 +25,10 @@ export const api = {
       `/api/claims/${encodeURIComponent(id)}/documents/${encodeURIComponent(documentId)}`,
     ),
 
-  decide: (id: string, body: { field_id: string; action: DecisionAction; value?: FieldValue; agent_version: number }) =>
+  decide: (
+    id: string,
+    body: { field_id: string; action: DecisionAction; value?: FieldValue; agent_run: number; agent_version: number },
+  ) =>
     request<ReviewerDecision>(`/api/claims/${encodeURIComponent(id)}/decisions`, { method: 'POST', body }),
 
   acknowledgeWarning: (id: string) =>

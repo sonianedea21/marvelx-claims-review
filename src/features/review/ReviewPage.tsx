@@ -3,10 +3,10 @@ import { Link, useParams } from 'react-router';
 import { api } from '../../api/claims';
 import type { ApiError } from '../../api/client';
 import { useLiveData } from '../../api/useLiveData';
-import type { DecisionAction, FieldState, FieldValue } from '../../domain/types';
+import type { AgentRef, DecisionAction, FieldState, FieldValue } from '../../domain/types';
 import {
-  BackToTop, Banner, Button, Card, cx, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, useStickyOffset,
-  type JumpItem, type StepItem,
+  BackToTop, Banner, Button, Card, cx, Disclosure, EmptyState, Heading, JumpNav, Skeleton, StepList, useInView,
+  useStickyOffset, type JumpItem, type StepItem,
 } from '../../ui';
 import { useIsDesktop } from '../shared/useIsDesktop';
 import { ClaimHeader, RunBar } from './ClaimHeader';
@@ -22,6 +22,8 @@ import { SummaryCard } from './SummaryCard';
 import { useDecide } from './useDecide';
 import { useRecentlyChanged } from './useRecentlyChanged';
 
+type Section = 'look' | 'fine';
+
 export function ReviewPage() {
   const { id = '' } = useParams();
   const { data: detail, error, connection, retry } = useLiveData(() => api.claim(id), api.claimEventsUrl(id), 'claim');
@@ -32,9 +34,14 @@ export function ReviewPage() {
   const [selection, setSelection] = useState<string | 'none' | null>(null);
   // Fields the reviewer opened themselves (a "looks fine" row, or "Change" on a decided field).
   const [opened, setOpened] = useState<Set<string>>(new Set());
+  // The section each opened field was in when the reviewer opened it. It stays there for good,
+  // so a field they are working on never jumps (or remounts and loses their edit) when the AI acts.
+  const [pinned, setPinned] = useState<Map<string, Section>>(new Map());
   const [busy, setBusy] = useState<'ack' | 'complete' | 'reopen' | 'retry' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const stickyRef = useStickyOffset<HTMLDivElement>();
+  // While the run bar at the top is scrolled away, a copy of it shows in the sticky row.
+  const [runBarRef, runBarInView] = useInView<HTMLDivElement>();
 
   if (error) {
     return (
@@ -65,8 +72,9 @@ export function ReviewPage() {
 
   const locked = detail.claim.status === 'reviewed';
   const canComplete = !locked && detail.review.blockers.length === 0;
-  const lookFields = detail.fields.filter(needsALook);
-  const fineFields = detail.fields.filter((f) => !needsALook(f));
+  const sectionOf = (field: FieldState): Section => pinned.get(field.field_id) ?? (needsALook(field) ? 'look' : 'fine');
+  const lookFields = detail.fields.filter((f) => sectionOf(f) === 'look');
+  const fineFields = detail.fields.filter((f) => sectionOf(f) === 'fine');
   const openCount = lookFields.filter(isOpen).length;
   const titles = Object.fromEntries(detail.documents.map((d) => [d.document_id, d.title]));
   const selected =
@@ -95,9 +103,11 @@ export function ReviewPage() {
         ? `What the AI did before it stopped · ${steps.length} steps`
         : `What the AI did · ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}`;
 
-  function open(fieldId: string) {
-    setOpened((current) => new Set(current).add(fieldId));
-    setSelection(fieldId);
+  function open(field: FieldState) {
+    const section = sectionOf(field);
+    setPinned((current) => (current.has(field.field_id) ? current : new Map(current).set(field.field_id, section)));
+    setOpened((current) => new Set(current).add(field.field_id));
+    setSelection(field.field_id);
   }
 
   function close(fieldId: string) {
@@ -109,8 +119,8 @@ export function ReviewPage() {
   }
 
   /** Saves a decision; a card the reviewer opened folds back into its one-line row. */
-  async function decideAndFold(fieldId: string, action: DecisionAction, version: number, value?: FieldValue) {
-    const ok = await decide(fieldId, action, version, value);
+  async function decideAndFold(fieldId: string, action: DecisionAction, seen: AgentRef, value?: FieldValue) {
+    const ok = await decide(fieldId, action, seen, value);
     if (ok) close(fieldId);
     return ok;
   }
@@ -152,15 +162,17 @@ export function ReviewPage() {
             saving={Boolean(pending[field.field_id])}
             serverError={errors[field.field_id]}
             startRevisiting={reviewerOpened && field.decision !== null && !field.outdated}
-            decide={(action, version, value) => decideAndFold(field.field_id, action, version, value)}
+            decide={(action, seen, value) => decideAndFold(field.field_id, action, seen, value)}
             onKeep={() => close(field.field_id)}
+            // Desktop: correcting a field shows its source beside it. (On a phone that would open the sheet over the editor.)
+            onEdit={isDesktop ? () => setSelection(field.field_id) : undefined}
           />
         </FieldCard>
       );
     }
     if (field.decision) {
       return (
-        <DecidedRow key={field.field_id} field={field} locked={locked} boxed={section === 'look'} onChange={() => open(field.field_id)} />
+        <DecidedRow key={field.field_id} field={field} locked={locked} boxed={section === 'look'} onChange={() => open(field)} />
       );
     }
     return (
@@ -171,8 +183,8 @@ export function ReviewPage() {
         saving={Boolean(pending[field.field_id])}
         error={errors[field.field_id]?.message}
         selected={selected?.field_id === field.field_id}
-        onAccept={() => decide(field.field_id, 'accept', field.agent.version)}
-        onOpen={() => open(field.field_id)}
+        onAccept={() => decide(field.field_id, 'accept', field.agent)}
+        onOpen={() => open(field)}
       />
     );
   }
@@ -181,7 +193,7 @@ export function ReviewPage() {
     <main className={cx('mx-auto max-w-content space-y-5 px-4 pt-2 pb-10', canComplete && 'pb-28 lg:pb-10')}>
       <ClaimHeader detail={detail} />
       {detail.run.phase === 'running' && (
-        <div className="rounded-md border border-line bg-ai-tint px-4 py-2">
+        <div ref={runBarRef} className="rounded-md border border-line bg-ai-tint px-4 py-2">
           <RunBar detail={detail} />
         </div>
       )}
@@ -208,6 +220,7 @@ export function ReviewPage() {
       <div className="lg:hidden">{progress}</div>
       {/* Sticks to the top while scrolling the fields. Its height feeds --sticky-offset for the source panel. */}
       <div ref={stickyRef} className="sticky top-0 z-30 -mx-4 space-y-3 border-b border-line bg-paper px-4 py-3 sm:mx-0 sm:px-0">
+        {detail.run.phase === 'running' && !runBarInView && <RunBar detail={detail} />}
         <div className="hidden lg:block">{progress}</div>
         {jumpItems.length > 0 && <JumpNav label="Jump to" items={jumpItems} />}
       </div>
@@ -281,8 +294,8 @@ export function ReviewPage() {
                 serverError={errors[selected.field_id]}
                 startRevisiting={selected.decision !== null && !selected.outdated}
                 onKeep={() => setSelection('none')}
-                decide={async (action, version, value) => {
-                  const ok = await decideAndFold(selected.field_id, action, version, value);
+                decide={async (action, seen, value) => {
+                  const ok = await decideAndFold(selected.field_id, action, seen, value);
                   if (ok) setSelection('none');
                   return ok;
                 }}

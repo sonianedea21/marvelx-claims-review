@@ -14,7 +14,11 @@ type Props = {
 /** "Where am I?": how many fields are decided, and what still stands between the reviewer and done. */
 export function ReviewProgress({ detail, attentionCount, busy, onComplete, onReopen, error }: Props) {
   const { decided, total } = detail.claim.progress;
-  const counts = { undecided: total - decided, outdated: detail.claim.open_conflicts };
+  const counts = {
+    undecided: total - decided,
+    outdated: detail.claim.open_conflicts,
+    derived: detail.fields.filter((f) => f.inputs_changed_since_decision).length,
+  };
   const blockers = detail.review.blockers
     .map((b) => blockerCopy(b, counts, detail.run.phase === 'failed'))
     .filter((text): text is string => text !== null);

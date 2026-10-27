@@ -45,7 +45,9 @@ export function useLiveData<T>(load: () => Promise<T>, eventsUrl: string, eventN
       cancelled = true;
       source?.close();
     };
-    // `load` is recreated every render by callers; the URL identifies what is loaded.
+    // `load` is recreated every render by callers, so listing it would reload on every render.
+    // The URL identifies what is loaded: when it changes, this effect runs with that render's `load`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventsUrl, eventName, attempt]);
 
   return { data, error, connection, retry: () => setAttempt((n) => n + 1) };

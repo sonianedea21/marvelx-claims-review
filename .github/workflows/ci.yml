@@ -1,0 +1,22 @@
+# The same three checks every checkpoint needs (CLAUDE.md), run by GitHub on every
+# pull request and on every push to main, so a red build shows on the PR itself.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc # Node 22, as locally
+          cache: npm
+      - run: npm ci # exact versions from package-lock.json
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test

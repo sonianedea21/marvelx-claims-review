@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { formatValue } from '../../domain/format';
 import type { FieldState } from '../../domain/types';
-import { Excerpt, Sheet, SidePanel, Skeleton } from '../../ui';
+import { ConfidenceLabel, Excerpt, Sheet, SidePanel, Skeleton } from '../../ui';
+import { fieldTrust } from './reviewCopy';
 import { useDocument } from './useDocuments';
 
 type Props = {
@@ -20,6 +22,8 @@ export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet, 
   const markRef = useRef<HTMLDivElement>(null);
   const title = field ? field.label : 'Source';
   const eyebrow = source ? documentTitles[source.document_id] ?? source.document_id : undefined;
+  // What the AI says, kept in the header so it stays next to the document while the reviewer compares.
+  const aiSays = field && <AiSays field={field} />;
 
   // Scroll the highlight to the middle of the panel only. scrollIntoView would also
   // scroll the page, moving the fields out from under the reviewer.
@@ -55,14 +59,41 @@ export function SourcePanel({ claimId, field, documentTitles, onClose, asSheet, 
 
   if (asSheet) {
     return (
-      <Sheet open={field !== null} onOpenChange={(open) => !open && onClose()} title={title} description={eyebrow} footer={actions} height="full">
+      <Sheet
+        open={field !== null}
+        onOpenChange={(open) => !open && onClose()}
+        title={title}
+        description={
+          aiSays && (
+            <>
+              {aiSays}
+              {eyebrow && <span className="block">From {eyebrow}</span>}
+            </>
+          )
+        }
+        footer={actions}
+        height="full"
+      >
         {body}
       </Sheet>
     );
   }
   return (
-    <SidePanel title={title} eyebrow={eyebrow ?? 'Source document'} onClose={field ? onClose : undefined}>
+    <SidePanel title={title} eyebrow={eyebrow ?? 'Source document'} description={aiSays} onClose={field ? onClose : undefined}>
       {body}
     </SidePanel>
+  );
+}
+
+/** "AI says: 22:40" with how far to trust it. Long values are cut to two lines; the field card has them in full. */
+function AiSays({ field }: { field: FieldState }) {
+  const trust = fieldTrust(field);
+  return (
+    <span className="block space-y-0.5">
+      <span className="line-clamp-2 block text-ink">
+        AI says: <strong className="font-semibold">{formatValue(field.agent.value, field.value_type)}</strong>
+      </span>
+      <ConfidenceLabel label={trust.label} detail={trust.detail} tone={trust.tone} />
+    </span>
   );
 }

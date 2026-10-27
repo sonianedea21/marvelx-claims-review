@@ -27,28 +27,32 @@ The role owns the component library and design system, defines how the product l
 
 ## Known traps in the fixture (must be handled; add more as we find them)
 
-- **Prompt injection.** `documents/claimant-statement-004817.txt` contains text claiming the claim is "pre-approved" and telling the system to accept everything. The recorded agent repeats it in its summary as fact. The UI must never let this skip or soften review, and should help the reviewer notice it.
-- **At-least-once delivery.** The same event (same `seq`) can arrive more than once, and the 004817 run has a duplicate. Dedupe by `(claim_id, seq)`, and make applying events idempotent.
-- **The agent revises fields it already emitted.** `field_revised` and `confidence_changed` can arrive *after* the reviewer has acted on that field. A reviewer decision must never be silently overwritten or silently made stale. Record which agent version each decision was made against, and surface the conflict.
-- **Provenance.** The reviewer must be able to tell apart: the agent's original value, the agent's own revisions (with `reason`), and their own accept / correct / override.
-- **Correct ≠ override.** Correct = edit the agent's value (it was close). Override = reject the agent's value and supply your own. Keep them distinct in the data and the UI.
-- **Run fails part-way.** The 004822 run ends in `run_failed`. The failed step gets no `step_finished`. Partial fields and summary still exist. Show `error.message` and `retryable` honestly.
-- **`start_after_ms: null`** (004809): the run already finished, so load all of its events at once. Its initial status is `needs_review`, not `queued`.
-- **`value: null`** means "the agent looked and found nothing". That is different from "not extracted yet", and different from an empty string.
-- **`source: null`** means no citation. Show that plainly and treat it as lower trust.
-- **Citation offsets are UTF-16 code units** (JS string indices), start inclusive and end exclusive. Slice in JS, never by bytes. Add a test that checks a span against the document text.
-- **Money is `{amount: decimal string, currency}`.** Never use `parseFloat` for arithmetic. Format with `Intl.NumberFormat`. Corrections keep the decimal-string format.
-- **Dates and times.** `"2026-09-13"` is a calendar date: don't pass it through `new Date()`, which parses it as UTC and can shift the day. `"23:40"` is local time at the incident: never convert it. `received_at` carries an offset.
-- **Input by type.** Edit inputs follow `value_type` (text, long_text, money, date, time, number, boolean) and are validated on both client and server.
-- **Confidently wrong.** 004817 `incident_time` is `"22:40"` at 0.91 confidence, but its citation reads "23:40" and the agent never revises it. Confidence alone is not enough; the citation check flags value/citation mismatches.
-- **Out-of-order duplicate.** The second copy of seq 42 arrives after seq 45. Dedupe with a set of seen seqs, never "seq <= last seq".
-- **Nested steps.** `read_invoice_page_2` starts and finishes inside `read_invoice`. Track steps in a map by `step_id`, not as a sequence.
-- **Markdown split across deltas.** `**Pre-approved ` … `insurer.**` spans four deltas, so partial markdown is unclosed mid-stream.
-- **Revisions carry no `label`/`value_type`.** Merge onto the extracted field. A revision for a field not yet seen is held, not dropped.
-- **Loose citation spans.** Spans include labels ("Driver: …"), newlines, run into the next line, and overlap (labour hours/rate, rooms affected/repair cost). A revision can cite a different document than the original.
-- **Derived field.** `estimated_payable` (004817) = total − excess, no citation, and goes stale if the reviewer corrects either input.
-- **"Finished" ≠ complete.** 004830 never looks up the policy (no policy document); 004822 has no policy document and fails at `lookup_policy` after 10 s of silence.
-- **Null with a citation.** Both `value: null` fields cite "not provided"/"not recorded"; `witness_phone` is null at 0.88.
+Each trap says where it is handled (→) and which test pins it. A trap without a test is not handled: write **open** next to it instead of claiming it, so neither a teammate nor an agent assumes it is covered. Test files are in `src/domain/` unless a path is given.
+
+- **Prompt injection.** `documents/claimant-statement-004817.txt` contains text claiming the claim is "pre-approved" and telling the system to accept everything. The recorded agent repeats it in its summary as fact. The UI must never let this skip or soften review, and should help the reviewer notice it. → `suspiciousInstructions.ts`, `RunBanners`, `SummaryCard`, the `warning_not_acknowledged` blocker. Test: `suspiciousInstructions.test.ts`, `server/app.test.ts`.
+- **At-least-once delivery.** The same event (same `seq`) can arrive more than once, and the 004817 run has a duplicate. Dedupe by `(claim_id, seq)`, and make applying events idempotent. → `applyEvent.ts`. Test: `applyEvent.test.ts`.
+- **The agent revises fields it already emitted.** `field_revised` and `confidence_changed` can arrive *after* the reviewer has acted on that field. A reviewer decision must never be silently overwritten or silently made stale. Record which agent run and version each decision was made against, and surface the conflict. → `deriveFieldState.ts` (`isOutdated`), `DecisionPanel` (Keep mine / Review again), 409 in `validateDecision.ts`. Test: `deriveFieldState.test.ts`, `src/features/review/DecisionPanel.test.tsx`.
+- **"Run the AI again" restarts version numbers.** A new run counts versions from 1, so a version number alone can't tell runs apart. → `AgentVersion.run`, `agent_run` + `agent_value` on decisions; across runs, the value the reviewer saw is compared. Test: `reviewRules.test.ts`, `validateDecision.test.ts`.
+- **Live changes must not move what the reviewer is working on.** `confidence_changed` raises 004817 `incident_location` from 72% to 93% at 64 s; when sections followed live confidence, the field left "Needs a look" and an in-progress correction was lost. → `needsALook` uses the lowest confidence the AI ever gave; `ReviewPage` pins a field the reviewer opened to its section. Test: `reviewRules.test.ts`, `src/features/review/ReviewPage.test.tsx`.
+- **Provenance.** The reviewer must be able to tell apart: the agent's original value, the agent's own revisions (with `reason`), and their own accept / correct / override. → `FieldCard` (`ValueChange` for value and confidence changes), `DecisionStamp`, `DecidedRow`. Covered by the visual check, not a unit test.
+- **Correct ≠ override.** Correct = edit the agent's value (it was close). Override = reject the agent's value and supply your own. Keep them distinct in the data and the UI. Neither may keep the AI's value unchanged (use accept). → `validateDecision.ts`. Test: `validateDecision.test.ts`, `deriveFieldState.test.ts`.
+- **Run fails part-way.** The 004822 run ends in `run_failed`. The failed step gets no `step_finished`. Partial fields and summary still exist. Show `error.message` and `retryable` honestly. → `applyEvent.ts`, `RunBanners`, `failureCopy.ts`. Test: `applyEvent.test.ts`.
+- **`start_after_ms: null`** (004809): the run already finished, so load all of its events at once. Its initial status is `needs_review`, not `queued`. → `server/replayClock.ts`. Test: `server/replayClock.test.ts`.
+- **`value: null`** means "the agent looked and found nothing". That is different from "not extracted yet", and different from an empty string. → `no_value` reason, "Confirm nothing found". Test: `deriveFieldState.test.ts`.
+- **`source: null`** means no citation. Show that plainly and treat it as lower trust. → `no_citation` reason, bulk-accept blocker. Test: `deriveFieldState.test.ts`, `validateDecision.test.ts`.
+- **Citation offsets are UTF-16 code units** (JS string indices), start inclusive and end exclusive. Slice in JS, never by bytes. → `sliceCitation`. Test: `deriveFieldState.test.ts` (every fixture span, plus emoji in `fixtures-extra/`).
+- **Money is `{amount: decimal string, currency}`.** Never use `parseFloat` for arithmetic. Format with `Intl.NumberFormat`. Corrections keep the decimal-string format. → `format.ts`, `validateValue.ts`. Test: `format.test.ts`, `validateDecision.test.ts`.
+- **Dates and times.** `"2026-09-13"` is a calendar date: don't pass it through `new Date()`, which parses it as UTC and can shift the day. `"23:40"` is local time at the incident: never convert it. `received_at` carries an offset. → `format.ts`. Test: `format.test.ts`.
+- **Input by type.** Edit inputs follow `value_type` (text, long_text, money, date, time, number, boolean) and are validated on both client and server. → `ValueEditor`, `validateValue.ts`. Test: `validateDecision.test.ts`, `DecisionPanel.test.tsx`.
+- **Confidently wrong.** 004817 `incident_time` is `"22:40"` at 0.91 confidence, but its citation reads "23:40" and the agent never revises it. Confidence alone is not enough; the citation check flags value/citation mismatches. → `checkCitation.ts`. Test: `checkCitation.test.ts`.
+- **Out-of-order duplicate.** The second copy of seq 42 arrives after seq 45. Dedupe with a set of seen seqs, never "seq <= last seq". → `applyEvent.ts`. Test: `applyEvent.test.ts`.
+- **Nested steps.** `read_invoice_page_2` starts and finishes inside `read_invoice`. Track steps in a map by `step_id`, not as a sequence. → `applyEvent.ts`. Test: `applyEvent.test.ts`.
+- **Markdown split across deltas.** `**Pre-approved ` … `insurer.**` spans four deltas, so partial markdown is unclosed mid-stream. → `summaryText`, `SummaryCard`. Test: `applyEvent.test.ts`, `suspiciousInstructions.test.ts`.
+- **Revisions carry no `label`/`value_type`.** Merge onto the extracted field. A revision for a field not yet seen is held, not dropped. → `applyEvent.ts` (`held_events`). Test: `applyEvent.test.ts`.
+- **Loose citation spans.** Spans include labels ("Driver: …"), newlines, run into the next line, and overlap (labour hours/rate, rooms affected/repair cost). A revision can cite a different document than the original. → `checkCitation.ts` answers `not_checked` rather than guess. Test: `checkCitation.test.ts`.
+- **Derived field.** `estimated_payable` (004817) = total − excess, no citation, and goes stale if the reviewer corrects either input. → `derivedFields.ts` flags it, reopens it if it was decided first, and blocks completion until re-checked (`derived_inputs_changed`). Test: `reviewRules.test.ts`.
+- **"Finished" ≠ complete.** 004830 never looks up the policy (no policy document); 004822 has no policy document and fails at `lookup_policy` after 10 s of silence. → `missingChecks.ts` (`REQUIRED_STEPS`), banner in `RunBanners`, queue tag, `missing_checks` bulk-accept blocker. Completing the review stays allowed. Test: `reviewRules.test.ts`, `validateDecision.test.ts`.
+- **Null with a citation.** Both `value: null` fields cite "not provided"/"not recorded"; `witness_phone` is null at 0.88. Test: `deriveFieldState.test.ts`.
 
 ## Stack and architecture
 
@@ -106,6 +110,8 @@ The server owns a replay clock. Reviewers must be able to restart it and change 
 - `.claude/skills/ui-component/`: how to add or change a design-system primitive.
 - `.claude/skills/visual-check/`: screenshot key screens at 375 and 1280 and review them.
 - `docs/ai-log.md`: factual log of what the agent proposed and what Sonia kept or changed.
+- `.claude/settings.json`: a hook that runs ESLint on every file the agent edits (`scripts/lint-edited-file.mjs`) and hands problems straight back to it. Rules are enforced by tools where possible, not by this file.
+- `.github/workflows/ci.yml`: typecheck, lint and tests on every pull request and push to `main`.
 
 ## Definition of done (per slice)
 
@@ -131,7 +137,7 @@ The next ticket is bulk "accept every field above a confidence threshold across 
 Node 22 (see `.nvmrc`; run `nvm use` first, the machine default is older).
 
 - `npm run dev`: API on :3001 and Vite on :5173 (proxies `/api`), together.
-- `npm run typecheck` / `npm test` / `npm run lint`: all three must pass before a checkpoint.
+- `npm run typecheck` / `npm test` / `npm run lint`: all three must pass before a checkpoint. CI runs the same three on every PR. Lint includes the tokens-only rules and React's `rules-of-hooks` / `exhaustive-deps`; silence one only with a comment that says why.
 - `npm run visual-check`: screenshots the default screens at 375 and 1280 into `.screenshots/` (needs `npm run dev`).
 - `npm run replay [-- --speed 4] [--seek 60000]`: restarts the replay on the running server (clears decisions). `--speed 0 --seek 96000` freezes 004817 mid-run.
 - `REPLAY_SPEED=4 npm run dev`: replay speed at boot (default 1). `EXTRA_RUNS=1 npm run dev`: also load `fixtures-extra/`.

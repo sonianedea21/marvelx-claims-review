@@ -221,8 +221,23 @@ export function DevComponentsPage() {
 
       <Section title="SidePanel (non-modal, desktop)">
         <div className="max-w-reading">
-          <SidePanel eyebrow="Police traffic accident report" title="Incident time" onClose={() => undefined}>
+          <SidePanel
+            eyebrow="Police traffic accident report"
+            title="Incident time"
+            description={
+              <>
+                AI says: <strong className="text-ink">22:40</strong> ·{' '}
+                <ConfidenceLabel label="Doesn't match the source" detail="AI said 91% sure" tone="danger" />
+              </>
+            }
+            onClose={() => undefined}
+          >
             <Excerpt before="Time of incident: " highlight="23:40" after={'\nLocation: Wibautstraat at Ringdijk'} />
+          </SidePanel>
+        </div>
+        <div className="max-w-reading">
+          <SidePanel eyebrow="Source document" title="Source">
+            <p className="text-sm text-ink-muted">Without a description or a close button.</p>
           </SidePanel>
         </div>
       </Section>
