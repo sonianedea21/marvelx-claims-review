@@ -2,7 +2,7 @@
 
 A reviewer watches an AI agent work through an insurance claim and decides what to do with every field it extracts: accept, correct or override, while the run is still going. React + TypeScript front end, a small Express back end, and the coding-agent setup I built it with.
 
-**Recording:** _link to the 3–5 minute walkthrough goes here_
+**Recording:** [walkthrough on Loom](https://www.loom.com/share/8bfd2f4977454bffaf266c23646c2e8f)
 
 ## Run it
 
@@ -97,7 +97,7 @@ The full, factual record is in `docs/ai-log.md`.
   - **Re-deriving "is this claim ready" in the client.**
 - **What in the repo stops that:**
   - `bulkAcceptBlockers` encodes all of these (`claim_not_ready`, `agent_value_changed`, `no_value`, `no_citation`, `citation_mismatch`, `below_threshold`, `claim_flagged`, `missing_checks`), and `validateDecision.test.ts` tests each one against the real fixtures.
-  - The API takes `agent_version` and returns `409` on a mismatch.
+  - The API takes `agent_run` and `agent_version` and returns `409` on a mismatch.
   - Status lives only in `deriveClaimStatus`.
   - `CLAUDE.md` lists the rules under "The next ticket", so an agent reads them before writing code.
   - Lint (also run on every file the agent edits, and in CI) and the `ui-component` skill keep the new UI on tokens.

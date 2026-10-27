@@ -241,3 +241,11 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 ### Agent mistakes caught while fixing
 - **A test that tested nothing:** the first page-level test for the lost edit passed without the page re-rendering, because it re-rendered the same element object. Fixed, then proven by putting the old rule back and watching the test fail.
 - **Fixture-specific copy in a generic rule:** the first missing-check banner named "the policy cover" though the rule is a list of steps; the failure banner had the same problem ("such as the policy cover"). Both made generic.
+
+## 2026-10-27 · Recording
+
+### Recording script: reworked by Sonia
+- **Proposed:** a linear script with timings. The revision demo needed accepting the invoice total in a window of about 10 seconds while other steps were also in progress.
+- **Sonia:** found it hard to follow while the run kept updating, and didn't know when to act on what. She asked for the Sanne de Vries part to be reordered.
+- **Outcome:** a cue sheet keyed to the step names in the "AI is still working" bar. Only one step is time-sensitive (accept the total when it appears); everything that doesn't change (the warning, the incident-time correction) moved before or after it. The intro is recorded over a paused replay (`npm run replay -- --speed 0 --seek 0`) and the run starts with the 1× button.
+- **Recording:** linked at the top of the README.
