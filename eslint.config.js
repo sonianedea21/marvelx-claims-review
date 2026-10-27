@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 // "Tokens only" (CLAUDE.md hard rule 5), enforced instead of trusted: no arbitrary
 // Tailwind values like p-[13px] or text-[#333], no hex colours and no inline styles in src/.
@@ -20,6 +21,16 @@ export default tseslint.config(
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
       ],
+    },
+  },
+  {
+    // Hooks: called in the same order every render, and effects list everything they read.
+    // Missing effect dependencies (stale closures) are a bug coding agents write often.
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { 'react-hooks': reactHooks },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
     },
   },
   {
