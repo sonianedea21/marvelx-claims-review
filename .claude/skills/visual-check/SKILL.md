@@ -12,6 +12,7 @@ description: Screenshot the key screens at phone (375px) and laptop (1280px) wid
 - `/`: the queue mid-replay, when all runs are done, empty (no reviewed claims yet) and in its error state (`?status=done` → 400)
 - `/claims/clm_4817`: the review screen frozen mid-run (96 s) and after the run finishes
 - `/claims/clm_4822`: the failed run
+- `/claims/clm_4830`: a finished run that skipped the policy check
 - `/dev/components`, and with the bottom sheet open
 
 Before each screenshot the script freezes the replay at a fixed position (`POST /api/dev/replay` with speed 0 and `seek_ms`), so screenshots are comparable between runs. At the end it restarts the replay at 1×, which clears any decisions you made. Targets live in `GROUPS` in `scripts/visual-check.ts`; add new screens there.

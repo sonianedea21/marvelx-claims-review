@@ -86,8 +86,9 @@ scripts/       replay + visual-check scripts
 - `GET /api/claims/:id/events`: SSE. A `claim` event with the full snapshot on connect and after every change to that claim. The server is the only place events are applied; the browser just renders snapshots.
 - `GET /api/queue/events?status=&priority=`: SSE. A `queue` event with the full filtered list after any change.
 - `GET /api/claims/:id/documents/:docId`: `404` for a document not on this claim.
-- `POST /api/claims/:id/decisions` `{field_id, action, value?, agent_version}`: through `domain/validateDecision`. `400` malformed, `404` unknown field, `409` agent changed the value since it was shown, `422` invalid value.
-- `POST /api/claims/:id/acknowledge-warning`, `POST /api/claims/:id/complete` (`409` with `blocked_by`).
+- `POST /api/claims/:id/decisions` `{field_id, action, value?, agent_run, agent_version}`: through `domain/validateDecision`. `400` malformed, `404` unknown field, `409` agent changed the value (or ran again) since it was shown, `422` invalid value or a correct / override that keeps the AI's value.
+- `POST /api/claims/:id/acknowledge-warning`, `POST /api/claims/:id/complete` (`409` with `blocked_by`), `POST /api/claims/:id/reopen` (`409` unless reviewed), `POST /api/claims/:id/retry` (`409` unless the run failed and is retryable).
+- Every error is JSON `{ error, message }`, including a malformed body and an unknown `/api` route (`server/app.ts`).
 - `GET|POST /api/dev/replay` `{speed?, seek_ms?}`: dev only.
 
 ### Replay
@@ -131,6 +132,8 @@ The next ticket is bulk "accept every field above a confidence threshold across 
 - never accept a field whose agent value changed since it was shown
 - never accept `null` values or values without a citation
 - never accept on claims flagged for suspicious instructions
+- never accept a value that contradicts its own citation, however confident
+- never accept on a claim whose run skipped a required check (004830: no policy lookup)
 
 ## Commands
 
