@@ -108,7 +108,9 @@ The full, factual record is in `docs/ai-log.md`.
 
 ## 6. Pushback
 
-_Sonia: your call. A draft:_ the brief judges visual finish on two widths, a live replay, a validated back end, an agent setup and seven README sections in about 4 hours. In practice the honest choice is between finish and correctness on the hard cases (revisions after a decision, mid-edit changes, failures). I'd either supply a stub back end, or say outright which of the two to favour, so candidates aren't guessing what "where you chose to stop" rewards.
+The brief asks for visual finish at two widths, a live replay, a validated back end, an agent setup and seven README sections in about four hours. All of that done well doesn't fit, so each candidate has to choose between finish and correctness on the hard cases (a revision after a decision, a change mid-edit, a run that fails part-way) without knowing which one you reward. I went half an hour over and still cut the end-to-end test and keyboard shortcuts.
+
+If I ran the process, I'd either supply a stub back end, so the four hours go into the review surface, or say outright which of the two to favour. Then "where you chose to stop" would measure judgement, not how well a candidate guessed.
 
 ## 7. What next, and what I left out
 
