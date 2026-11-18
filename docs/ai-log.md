@@ -249,3 +249,10 @@ Sonia used the screen and reported 12 problems. Factual list of what was wrong a
 - **Sonia:** found it hard to follow while the run kept updating, and didn't know when to act on what. She asked for the Sanne de Vries part to be reordered.
 - **Outcome:** a cue sheet keyed to the step names in the "AI is still working" bar. Only one step is time-sensitive (accept the total when it appears); everything that doesn't change (the warning, the incident-time correction) moved before or after it. The intro is recorded over a paused replay (`npm run replay -- --speed 0 --seek 0`) and the run starts with the 1× button.
 - **Recording:** linked at the top of the README.
+
+## 2026-11-18 · After submission
+
+### README section 6 (Pushback): finished
+- **Before:** the submitted README still opened section 6 with the agent's marker "_Sonia: your call. A draft:_", followed by the agent's draft.
+- **Sonia:** asked for the section to be finished.
+- **Outcome:** the marker is removed. The argument is the draft's (the scope doesn't fit four hours, so candidates guess between finish and hard-case correctness), rewritten in her voice with where her own time went: half an hour over, the end-to-end test and keyboard shortcuts cut.
